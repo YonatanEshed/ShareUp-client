@@ -1,4 +1,4 @@
-package com.shareup.repository.BASE;
+package com.shareup.service.BASE;
 
 import android.content.Context;
 
@@ -11,10 +11,10 @@ public class FirebaseInstance {
 
     private FirebaseInstance(Context context) {
         FirebaseOptions options = new FirebaseOptions.Builder()
-                .setProjectId("")
-                .setApplicationId("")
-                .setApiKey("")
-                .setStorageBucket("")
+                .setProjectId("shareup")
+                .setApplicationId("shareup")
+                .setApiKey("shareup")
+                .setStorageBucket("shareup")
                 .build();
 
         app = FirebaseApp.initializeApp(context, options);
