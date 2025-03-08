@@ -1,48 +1,20 @@
 package com.shareup.model.BASE;
 
-import com.google.firebase.firestore.Exclude;
-
 import java.io.Serializable;
 
 public abstract class BaseEntity implements Serializable {
-    @Exclude
-    protected int    id;
-    protected String idFs;
-    @Exclude
-    protected EntityStatus entityStatus;
+    protected String id;
 
     public BaseEntity() {
-        id           = 0;
-        idFs         = "";
-        entityStatus = EntityStatus.UNCHANGED;
+        id = "";
     }
 
-       // GRADLE: implementation ("com.google.firebase:firebase-firestore:25.0.0")
-    @Exclude
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    @Exclude
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
-    }
-
-    public String getIdFs() {
-        return idFs;
-    }
-
-    public void setIdFs(String idFs) {
-        this.idFs = idFs;
-    }
-
-    @Exclude
-    public EntityStatus getEntityStatus() {
-        return entityStatus;
-    }
-    @Exclude
-    public void setEntityStatus(EntityStatus entityStatus) {
-        this.entityStatus = entityStatus;
     }
 
     @Override
@@ -50,6 +22,6 @@ public abstract class BaseEntity implements Serializable {
         if (this == o) return true;
         if (!(o instanceof BaseEntity)) return false;
         BaseEntity that = (BaseEntity) o;
-        return id == that.id && idFs.equals(that.idFs) && entityStatus.equals(that.entityStatus);
+        return id.equals(that.id);
     }
 }
