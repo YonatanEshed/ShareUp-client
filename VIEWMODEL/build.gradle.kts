@@ -35,7 +35,7 @@ dependencies {
     implementation (libs.play.services.tasks)
     implementation(libs.firebase.firestore)
     implementation(project(":MODEL"))
-    implementation(project(":REPOSITORY"))
+    implementation(project(":SERVICE"))
     implementation(project(":HELPER"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
