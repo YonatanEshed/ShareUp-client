@@ -3,121 +3,144 @@ package com.shareup.service.BASE;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import com.google.firebase.functions.FirebaseFunctions;
-import com.google.firebase.functions.HttpsCallableReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.DELETE;
+import retrofit2.http.Header;
+import retrofit2.http.Path;
+import retrofit2.http.Url;
 
 public abstract class BaseService {
-    private static final String BASE_ROUTE = "api/";
-    protected static String SERVICE_ROUTE = "";
+    private static final String BASE_URL = "https://us-central1-shareup-21b47.cloudfunctions.net/api/";
+    protected String SERVICE_ROUTE = "";
 
-    private static final String PREFS_NAME = "AppPrefs";
-    private static final String TOKEN_KEY = "jwt_token";
-
-    protected static FirebaseFunctions functions;
+    private static Retrofit retrofit;
     private SharedPreferences sharedPreferences;
     private Gson gson;
 
     public BaseService(Context context) {
-        functions = getFunctionsApp(context);
-        sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         gson = new Gson();
-    }
-
-    private static FirebaseFunctions getFunctionsApp(Context context) {
-        if (functions == null) {
-            try {
-                functions = FirebaseFunctions.getInstance();
-            } catch (Exception e) {
-                FirebaseInstance instance = FirebaseInstance.instance(context);
-                functions = FirebaseFunctions.getInstance(FirebaseInstance.app);
-            }
+        if (retrofit == null) {
+            retrofit = createRetrofitInstance();
         }
-        return functions;
     }
 
-    // Retrieves JWT token from SharedPreferences
+    private Retrofit createRetrofitInstance() {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(chain -> {
+                    Request original = chain.request();
+                    Request.Builder requestBuilder = original.newBuilder();
+                    String token = getJwtToken();
+                    if (token != null) {
+                        requestBuilder.header("Authorization", "Bearer " + token);
+                    }
+                    return chain.proceed(requestBuilder.build());
+                })
+                .addInterceptor(logging)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        return new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+    }
+
     private String getJwtToken() {
-        return sharedPreferences.getString(TOKEN_KEY, null);
+        return sharedPreferences.getString("jwt_token", null);
     }
 
-    // Saves JWT token
     public void saveJwtToken(String token) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(TOKEN_KEY, token);
+        editor.putString("jwt_token", token);
         editor.apply();
     }
 
-    // Clears JWT token (useful for logout)
     public void clearJwtToken() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove(TOKEN_KEY);
+        editor.remove("jwt_token");
         editor.apply();
     }
 
-    // Generic API request handler (supports both single object & list)
-    protected <T> void makeApiRequest(
-            String method,
-            String route,
-            Map<String, Object> body,
-            Class<T> modelClass,
-            boolean isList,
-            Consumer<Object> callback
-    ) {
-        String token = getJwtToken();
-        if (token == null) {
-            Log.e("BaseService", "JWT Token is missing");
-            callback.accept(null);
-            return;
+    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, Class<T> modelClass, boolean isList, Consumer<Object> callback) {
+        ApiService apiService = retrofit.create(ApiService.class);
+        Call<Object> call;
+
+        switch (method) {
+            case "GET":
+                call = apiService.get(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
+                break;
+            case "POST":
+                call = apiService.post(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
+                break;
+            case "PUT":
+                call = apiService.put(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
+                break;
+            case "DELETE":
+                call = apiService.delete(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
+                break;
+            default:
+                Log.e("BaseService", "Unsupported method: " + method);
+                callback.accept(null);
+                return;
         }
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("method", method);
-        data.put("route", BASE_ROUTE + SERVICE_ROUTE + route);
-        data.put("body", body);
-        data.put("token", token); // Attach JWT Token
-
-        HttpsCallableReference function = functions.getHttpsCallable("handleRequest"); // Firebase Function
-
-        function.call(data).addOnCompleteListener(task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                Map<String, Object> response = (Map<String, Object>) task.getResult().getData();
-
-                // Handle error responses
-                if (response.containsKey("error")) {
-                    Log.e("BaseService", "API Error: " + response.get("error"));
-                    callback.accept(null);
-                    return;
-                }
-
-                try {
-                    String json = gson.toJson(response);
+        call.enqueue(new Callback<Object>() {
+            @Override
+            public void onResponse(Call<Object> call, Response<Object> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String json = gson.toJson(response.body());
                     if (isList) {
-                        Type listType = TypeToken.getParameterized(List.class, modelClass).getType();
-                        List<T> modelList = gson.fromJson(json, listType);
+                        Type listType = TypeToken.getParameterized(ArrayList.class, modelClass).getType();
+                        ArrayList<T> modelList = gson.fromJson(json, listType);
                         callback.accept(modelList);
                     } else {
                         T model = gson.fromJson(json, modelClass);
                         callback.accept(model);
                     }
-                } catch (Exception e) {
-                    Log.e("BaseService", "Error parsing response", e);
+                } else {
+                    Log.e("BaseService", "API Error: " + response.errorBody());
+
+                    if (response.code() == 401) {
+                        clearJwtToken();
+                        // TODO: Redirect to login page
+                    }
+
                     callback.accept(null);
                 }
-            } else {
-                Log.e("BaseService", "API Request Failed", task.getException());
+            }
+
+            @Override
+            public void onFailure(Call<Object> call, Throwable t) {
+                Log.e("BaseService", "API Request Failed", t);
                 callback.accept(null);
             }
         });
     }
 
-    // Convenience methods for API requests
     protected <T> void get(String route, Class<T> modelClass, boolean isList, Consumer<Object> callback) {
         makeApiRequest("GET", route, null, modelClass, isList, callback);
     }
@@ -148,5 +171,19 @@ public abstract class BaseService {
 
     protected <T> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
         delete(route, modelClass, false, callback);
+    }
+
+    interface ApiService {
+        @GET
+        Call<Object> get(@Url String url, @Header("Authorization") String token);
+
+        @POST
+        Call<Object> post(@Url String url, @Header("Authorization") String token, @Body Map<String, Object> body);
+
+        @PUT
+        Call<Object> put(@Url String url, @Header("Authorization") String token, @Body Map<String, Object> body);
+
+        @DELETE
+        Call<Object> delete(@Url String url, @Header("Authorization") String token);
     }
 }
