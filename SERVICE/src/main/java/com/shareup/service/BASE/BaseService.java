@@ -2,11 +2,15 @@ package com.shareup.service.BASE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.service.autofill.SaveRequest;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.shareup.model.BASE.BaseEntity;
 import com.shareup.model.MessageResponse;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Map;
@@ -86,9 +90,10 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    public void clearJwtToken() {
+    public void clearLogin() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove("jwt_token");
+        editor.remove("user_id");
         editor.apply();
     }
 
@@ -132,19 +137,28 @@ public abstract class BaseService {
                             Log.i("BaseService", modelList.toString());
                             callback.accept(modelList);
                             break;
-                        case MESSAGE:
-                            MessageResponse message = gson.fromJson(json, MessageResponse.class);
-                            Log.i("BaseService", message.getMessage());
-                            callback.accept(null);
-                            break;
                     }
-                } else {
-                    Log.e("BaseService", "API Error: " + response.errorBody());
+                } else if(response.errorBody() != null) {
+                    try {
+                        String json = gson.toJson(response.errorBody().string());
+                        if (json.startsWith("\"")) { // If it's a quoted string, decode it first
+                            json = gson.fromJson(json, String.class);
+                        }
+                        Log.d("BaseService", json);
+                        MessageResponse message = gson.fromJson(json, MessageResponse.class);
+                        Log.e("BaseService", message.toString());
+                        BaseEntity model = (BaseEntity) modelClass.getConstructor().newInstance();
 
-                    if (response.code() == 401) {
-                        clearJwtToken();
-                        // TODO: Redirect to login page
+                        model.setServerMessage(message.getMessage());
+
+                        callback.accept(model);
+                    } catch (IOException | InvocationTargetException | NoSuchMethodException |
+                             InstantiationException | IllegalAccessException e) {
+                        Log.e("BaseService", "API Error: " + response.errorBody(), e);
+                        callback.accept(null);
                     }
+                } else{
+                    Log.e("BaseService", "API Error: " + response.errorBody());
 
                     callback.accept(null);
                 }
