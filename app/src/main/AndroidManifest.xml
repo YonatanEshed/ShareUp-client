@@ -10,13 +10,19 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TASHTIT"
+        android:theme="@style/Theme.ShareUp"
         tools:targetApi="31">
         <activity
             android:name=".ACTIVITIES.Login"
             android:exported="false" />
         <activity
             android:name=".ACTIVITIES.Register"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.EditProfile"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.Profile"
             android:exported="false" />
         <activity
             android:name=".ACTIVITIES.BASE.BaseActivity"
