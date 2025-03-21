@@ -7,6 +7,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.shareup.model.BASE.BaseEntity;
+import com.shareup.model.BASE.BaseResponse;
 import com.shareup.model.MessageResponse;
 
 import java.io.IOException;
@@ -144,12 +145,13 @@ public abstract class BaseService {
                         if (json.startsWith("\"")) { // If it's a quoted string, decode it first
                             json = gson.fromJson(json, String.class);
                         }
+
                         Log.d("BaseService", json);
                         MessageResponse message = gson.fromJson(json, MessageResponse.class);
-                        Log.e("BaseService", message.toString());
-                        BaseEntity model = (BaseEntity) modelClass.getConstructor().newInstance();
 
+                        BaseResponse model = (BaseEntity) modelClass.getConstructor().newInstance();
                         model.setServerMessage(message.getMessage());
+                        model.setCode(response.code());
 
                         callback.accept(model);
                     } catch (IOException | InvocationTargetException | NoSuchMethodException |

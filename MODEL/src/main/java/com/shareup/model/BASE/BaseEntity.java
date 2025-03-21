@@ -4,10 +4,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 
-public abstract class BaseEntity implements Serializable {
+public abstract class BaseEntity extends BaseResponse implements Serializable {
     protected String id;
-    @SerializedName("message")
-    protected String serverMessage;
 
     public BaseEntity() {
         id = "";
@@ -19,14 +17,6 @@ public abstract class BaseEntity implements Serializable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getServerMessage() {
-        return serverMessage;
-    }
-
-    public void setServerMessage(String serverMessage) {
-        this.serverMessage = serverMessage;
     }
 
     @Override
