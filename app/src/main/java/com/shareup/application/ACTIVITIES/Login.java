@@ -17,18 +17,18 @@ import androidx.core.view.WindowInsetsCompat;
 import com.shareup.application.R;
 import com.shareup.viewmodel.AuthViewModel;
 
-public class Register extends AppCompatActivity {
+public class Login extends AppCompatActivity {
     AuthViewModel authViewModel;
 
-    Button btnRegister, btnRegisterToLogin;
-    EditText etRegisterEmail, etRegisterUsername, etRegisterPassword;
-    TextView tvRegisterError;
-
+    Button btnLogin, btnLoginToRegister;
+    EditText etLoginEmail, etLoginPassword;
+    TextView tvLoginError;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_register);
+        setContentView(R.layout.activity_login);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -41,40 +41,39 @@ public class Register extends AppCompatActivity {
 
     protected void initializeViews() {
         // Buttons
-        btnRegister = findViewById(R.id.btnRegister);
-        btnRegisterToLogin = findViewById(R.id.btnRegisterToLogin);
+        btnLogin = findViewById(R.id.btnLogin);
+        btnLoginToRegister = findViewById(R.id.btnLoginToRegister);
 
         // EditTexts
-        etRegisterEmail = findViewById(R.id.etRegisterEmail);
-        etRegisterUsername = findViewById(R.id.etRegisterUsername);
-        etRegisterPassword = findViewById(R.id.etRegisterPassword);
+        etLoginEmail = findViewById(R.id.etLoginEmail);
+        etLoginPassword = findViewById(R.id.etLoginPassword);
 
         // TextViews
-        tvRegisterError = findViewById(R.id.tvRegisterError);
+        tvLoginError = findViewById(R.id.tvLoginError);
 
         setViewModel();
         setListeners();
     }
 
     protected void setListeners() {
-        btnRegister.setOnClickListener(new View.OnClickListener() {
+        btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email = etRegisterEmail.getText().toString();
-                String username = etRegisterUsername.getText().toString();
-                String password = etRegisterPassword.getText().toString();
+                String email = etLoginEmail.getText().toString();
+                String password = etLoginPassword.getText().toString();
+
 
                 // add validations
 
 
-                authViewModel.register(email, username, password);
+                authViewModel.login(email, password);
             }
         });
 
-        btnRegisterToLogin.setOnClickListener(new View.OnClickListener() {
+        btnLoginToRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Register.this, Login.class);
+                Intent intent = new Intent(Login.this, Register.class);
                 startActivity(intent);
             }
         });
@@ -86,17 +85,22 @@ public class Register extends AppCompatActivity {
         authViewModel.getData().observe(this, authResponse -> {
             if (authResponse != null) {
                 if (authResponse.getServerMessage() != null && authResponse.getToken() == null) {
-                    tvRegisterError.setText(authResponse.getServerMessage());
+                    tvLoginError.setText(authResponse.getServerMessage());
                     return;
                 }
                 authViewModel.saveLogin(authResponse.getToken(), authResponse.getUserId());
 
-                Intent intent = new Intent(Register.this, MainActivity.class);
+                Intent intent = new Intent(Login.this, MainActivity.class);
                 startActivity(intent);
-
             } else {
-                tvRegisterError.setText("An Error Occurred. please try again"); // TODO: Show message returned by the API
+                tvLoginError.setText("An Error Occurred. please try again");
             }
         });
+
+        // skip login if already logged in
+        if (authViewModel.isLoggedIn()) {
+            Intent intent = new Intent(Login.this, MainActivity.class);
+            startActivity(intent);
+        }
     }
 }

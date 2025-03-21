@@ -22,6 +22,14 @@ public class AuthViewModel extends BaseViewModel<AuthResponse> {
         executeApiCall(callback -> authService.login(email, password, callback::onResult));
     }
 
+    public void logout() {
+        authService.clearLogin();
+    }
+
+    public boolean isLoggedIn() {
+        return authService.getUserId() != null;
+    }
+
     public void saveLogin(String token, String username) {
         authService.saveLogin(token, username);
     }

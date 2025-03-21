@@ -1,6 +1,8 @@
 package com.shareup.application.ACTIVITIES;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 
 import com.shareup.application.R;
 
@@ -11,6 +13,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 
 public class MainActivity extends BaseActivity {
+
+    Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,13 +33,17 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initializeViews() {
+        button = findViewById(R.id.button1);
 
         setListeners();
     }
 
     @Override
     protected void setListeners() {
-
+        button.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, Login.class);
+            startActivity(intent);
+        });
     }
 
     @Override
