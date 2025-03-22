@@ -1,14 +1,16 @@
 package com.shareup.application.ACTIVITIES.BASE;
 
-import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
-import com.shareup.application.ACTIVITIES.MainActivity;
+import com.shareup.application.ACTIVITIES.Login;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -38,30 +40,16 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected abstract void initializeViews();
     protected abstract void setListeners();
     protected abstract void setViewModel();
-    //public static Member currentMember = null;
 
-    //region Progress Dialog
-    public ProgressDialog mProgressDialog;
-    public void showProgressDialog(String title, @NonNull String message) {
-        if (mProgressDialog == null) {
-            mProgressDialog = new ProgressDialog(this);
-            if (title != null)
-                mProgressDialog.setTitle(title);
-            mProgressDialog.setIcon(R.mipmap.ic_launcher);
-            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mProgressDialog.setCancelable(false);
-        }
-        if (!mProgressDialog.isShowing()) {
-            mProgressDialog.setMessage(message);
-            mProgressDialog.show();
-        }
+    //region Loading
+    public void showLoading() {
+        LinearLayout loadingLayout = findViewById(R.id.loadingLayout);
+        loadingLayout.setVisibility(LinearLayout.VISIBLE);
     }
 
-    public void hideProgressDialog() {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.dismiss();
-            mProgressDialog = null;
-        }
+    public void hideLoading() {
+        LinearLayout loadingLayout = findViewById(R.id.loadingLayout);
+        loadingLayout.setVisibility(LinearLayout.GONE);
     }
     //endregion
 
@@ -77,7 +65,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
 
                 if (itemId == R.id.navigation_home){
-                    navigateToActivity(MainActivity.class);
+                    navigateToActivity(null);
                 }
                 else if(itemId == R.id.navigation_members){
                     navigateToActivity(null);
@@ -91,6 +79,10 @@ public abstract class BaseActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    protected void hideMenu(){
+        bottomNavigationView.setVisibility(BottomNavigationView.GONE);
     }
 
     protected void setSelectedNavigationItem(int itemId) {
@@ -112,6 +104,23 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         }
     }
-
     //endregion
+
+
+    protected String getUserId() {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        return sharedPreferences.getString("user_id", null);
+    }
+
+    protected void logout() {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove("jwt_token");
+        editor.remove("user_id");
+        editor.apply();
+
+        Intent intent = new Intent(this, Login.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
 }

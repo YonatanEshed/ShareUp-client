@@ -2,9 +2,16 @@ package com.shareup.service.BASE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.service.autofill.SaveRequest;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.shareup.model.BASE.BaseEntity;
+import com.shareup.model.BASE.BaseResponse;
+import com.shareup.model.MessageResponse;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Map;
@@ -73,19 +80,25 @@ public abstract class BaseService {
         return sharedPreferences.getString("jwt_token", null);
     }
 
-    public void saveJwtToken(String token) {
+    public String getUserId() {
+        return sharedPreferences.getString("user_id", null);
+    }
+
+    public void saveLogin(String token, String userId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("jwt_token", token);
+        editor.putString("user_id", userId);
         editor.apply();
     }
 
-    public void clearJwtToken() {
+    public void clearLogin() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove("jwt_token");
+        editor.remove("user_id");
         editor.apply();
     }
 
-    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, Class<T> modelClass, boolean isList, Consumer<Object> callback) {
+    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
 
@@ -113,21 +126,41 @@ public abstract class BaseService {
             public void onResponse(Call<Object> call, Response<Object> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String json = gson.toJson(response.body());
-                    if (isList) {
-                        Type listType = TypeToken.getParameterized(ArrayList.class, modelClass).getType();
-                        ArrayList<T> modelList = gson.fromJson(json, listType);
-                        callback.accept(modelList);
-                    } else {
-                        T model = gson.fromJson(json, modelClass);
-                        callback.accept(model);
+                    switch (type) {
+                        case SINGLE:
+                            T model = gson.fromJson(json, modelClass);
+                            Log.i("BaseService", model.toString());
+                            callback.accept(model);
+                            break;
+                        case LIST:
+                            Type listType = TypeToken.getParameterized(ArrayList.class, modelClass).getType();
+                            ArrayList<T> modelList = gson.fromJson(json, listType);
+                            Log.i("BaseService", modelList.toString());
+                            callback.accept(modelList);
+                            break;
                     }
-                } else {
-                    Log.e("BaseService", "API Error: " + response.errorBody());
+                } else if(response.errorBody() != null) {
+                    try {
+                        String json = gson.toJson(response.errorBody().string());
+                        if (json.startsWith("\"")) { // If it's a quoted string, decode it first
+                            json = gson.fromJson(json, String.class);
+                        }
 
-                    if (response.code() == 401) {
-                        clearJwtToken();
-                        // TODO: Redirect to login page
+                        Log.d("BaseService", json);
+                        MessageResponse message = gson.fromJson(json, MessageResponse.class);
+
+                        BaseResponse model = (BaseEntity) modelClass.getConstructor().newInstance();
+                        model.setServerMessage(message.getMessage());
+                        model.setCode(response.code());
+
+                        callback.accept(model);
+                    } catch (IOException | InvocationTargetException | NoSuchMethodException |
+                             InstantiationException | IllegalAccessException e) {
+                        Log.e("BaseService", "API Error: " + response.errorBody(), e);
+                        callback.accept(null);
                     }
+                } else{
+                    Log.e("BaseService", "API Error: " + response.errorBody());
 
                     callback.accept(null);
                 }
@@ -141,36 +174,20 @@ public abstract class BaseService {
         });
     }
 
-    protected <T> void get(String route, Class<T> modelClass, boolean isList, Consumer<Object> callback) {
-        makeApiRequest("GET", route, null, modelClass, isList, callback);
+    protected <T> void get(String route, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
+        makeApiRequest("GET", route, null, modelClass, type, callback);
     }
 
-    protected <T> void get(String route, Class<T> modelClass, Consumer<Object> callback) {
-        get(route, modelClass, false, callback);
+    protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
+        makeApiRequest("POST", route, body, modelClass, type, callback);
     }
 
-    protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, boolean isList, Consumer<Object> callback) {
-        makeApiRequest("POST", route, body, modelClass, isList, callback);
+    protected <T> void put(String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
+        makeApiRequest("PUT", route, body, modelClass, type, callback);
     }
 
-    protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
-        post(route, body, modelClass, false, callback);
-    }
-
-    protected <T> void put(String route, Map<String, Object> body, Class<T> modelClass, boolean isList, Consumer<Object> callback) {
-        makeApiRequest("PUT", route, body, modelClass, isList, callback);
-    }
-
-    protected <T> void put(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
-        put(route, body, modelClass, false, callback);
-    }
-
-    protected <T> void delete(String route, Class<T> modelClass, boolean isList, Consumer<Object> callback) {
-        makeApiRequest("DELETE", route, null, modelClass, isList, callback);
-    }
-
-    protected <T> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
-        delete(route, modelClass, false, callback);
+    protected <T> void delete(String route, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
+        makeApiRequest("DELETE", route, null, modelClass, type, callback);
     }
 
     interface ApiService {
@@ -185,5 +202,11 @@ public abstract class BaseService {
 
         @DELETE
         Call<Object> delete(@Url String url, @Header("Authorization") String token);
+    }
+
+    protected enum ResponseType {
+        SINGLE,
+        LIST,
+        MESSAGE
     }
 }

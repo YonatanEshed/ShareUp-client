@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".ACTIVITIES.BASE.BaseActivity">
 
+
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
@@ -20,5 +21,20 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottom_nav_bar" />
+
+
+    <LinearLayout
+        android:id="@+id/loadingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:background="#AAFFFFFF"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/logo"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

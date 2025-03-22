@@ -16,6 +16,6 @@ public class Xservice extends BaseService {
 
     public void fetchData(String itemId, Consumer<List<Xmodel>> callback) {
         String route = "data-route/" + itemId;
-        get(route, Xmodel.class, true, response -> callback.accept((List<Xmodel>) response));
+//        get(route, Xmodel.class, true, response -> callback.accept((List<Xmodel>) response));
     }
 }

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ACTIVITIES.Profile">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="50dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ivProfilePicture"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="fitCenter"
+            android:src="@android:drawable/btn_star_big_on"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/cardView"
+        app:layout_constraintTop_toTopOf="@+id/cardView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/cardView"
+        tools:layout_editor_absoluteY="0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tvPostsCount"
+                style="@style/Subheading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100"
+                app:layout_constraintEnd_toEndOf="@+id/tvPostsTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+                />
+
+            <TextView
+                android:id="@+id/tvPostsTitle"
+                style="@style/BodyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Posts"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvPostsCount" />
+            />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="26dp"
+            >
+
+            <TextView
+                android:id="@+id/tvFollowersCount"
+                style="@style/Subheading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100"
+                app:layout_constraintEnd_toEndOf="@+id/tvFollowersTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            />
+
+            <TextView
+                android:id="@+id/tvFollowersTitle"
+                style="@style/BodyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Followers"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvFollowersCount" />
+            />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            >
+
+            <TextView
+                android:id="@+id/tvFollowingCount"
+                style="@style/Subheading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100"
+                app:layout_constraintEnd_toEndOf="@+id/tvFollowingTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            />
+
+            <TextView
+                android:id="@+id/tvFollowingTitle"
+                style="@style/BodyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Following"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvFollowingCount" />
+            />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvProfileUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        style="@style/Subheading"
+        app:layout_constraintStart_toStartOf="@+id/cardView"
+        app:layout_constraintTop_toBottomOf="@+id/cardView" />
+
+    <TextView
+        android:id="@+id/tvBio"
+        style="@style/BodyText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="5dp"
+        android:text="Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia, molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvProfileUsername" />
+
+    <LinearLayout
+        android:id="@+id/profileButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="20dp"
+        android:weightSum="2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvBio"
+        tools:visibility="gone">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnProfileFollow"
+            style="@style/PrimaryButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Follow"
+            app:layout_constraintStart_toStartOf="@+id/tvBio"
+            app:layout_constraintTop_toBottomOf="@+id/tvBio" />
+
+        <View
+            android:layout_width="5dp"
+            android:layout_height="match_parent" /> <!-- Gap -->
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnProfileMessage"
+            style="@style/SecondaryButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Message"
+            app:layout_constraintStart_toStartOf="@+id/tvBio"
+            app:layout_constraintTop_toBottomOf="@+id/tvBio" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/profileButtonsOwn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:weightSum="2"
+        app:layout_constraintTop_toBottomOf="@+id/tvBio">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnEditProfile"
+            style="@style/SecondaryButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Edit Profile"
+            app:layout_constraintStart_toStartOf="@+id/tvBio"
+            app:layout_constraintTop_toBottomOf="@+id/tvBio" />
+
+        <View
+            android:layout_width="5dp"
+            android:layout_height="match_parent"/> <!-- Gap -->
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnProfileLogout"
+            style="@style/SecondaryButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Logout"
+            app:layout_constraintStart_toStartOf="@+id/tvBio"
+            app:layout_constraintTop_toBottomOf="@+id/tvBio" />
+    </LinearLayout>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

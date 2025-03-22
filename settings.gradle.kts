@@ -19,7 +19,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TASHTIT_NEW"
+rootProject.name = "ShareUp"
 include(":app")
 include(":HELPER")
 include(":MODEL")

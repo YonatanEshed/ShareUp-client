@@ -1,8 +1,10 @@
 package com.shareup.model.BASE;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
-public abstract class BaseEntity implements Serializable {
+public abstract class BaseEntity extends BaseResponse implements Serializable {
     protected String id;
 
     public BaseEntity() {
