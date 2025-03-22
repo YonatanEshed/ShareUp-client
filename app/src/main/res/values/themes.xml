@@ -6,6 +6,7 @@
 
         <!-- Splash transparent -->
         <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@color/white</item>
 
     </style>
 
