@@ -95,7 +95,7 @@ public class Register extends BaseActivity {
                 }
                 authViewModel.saveLogin(authResponse.getToken(), authResponse.getUserId());
 
-                Intent intent = new Intent(Register.this, MainActivity.class);
+                Intent intent = new Intent(Register.this, Login.class);
                 startActivity(intent);
 
             } else {

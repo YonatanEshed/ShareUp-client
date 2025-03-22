@@ -33,9 +33,6 @@
         <activity
             android:name=".ACTIVITIES.BASE.BaseActivity"
             android:exported="false" />
-        <activity
-            android:name=".ACTIVITIES.MainActivity"
-            android:exported="true" />
     </application>
 
 </manifest>

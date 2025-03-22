@@ -11,7 +11,6 @@ import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.shareup.application.ACTIVITIES.Login;
-import com.shareup.application.ACTIVITIES.MainActivity;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -66,7 +65,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
 
                 if (itemId == R.id.navigation_home){
-                    navigateToActivity(MainActivity.class);
+                    navigateToActivity(null);
                 }
                 else if(itemId == R.id.navigation_members){
                     navigateToActivity(null);
