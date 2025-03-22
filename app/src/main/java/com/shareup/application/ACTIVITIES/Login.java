@@ -2,22 +2,21 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
 import com.shareup.viewmodel.AuthViewModel;
 
-public class Login extends AppCompatActivity {
+public class Login extends BaseActivity {
     AuthViewModel authViewModel;
 
     Button btnLogin, btnLoginToRegister;
@@ -28,13 +27,15 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_login);
+//        setContentView(R.layout.activity_login);
+        getLayoutInflater().inflate(R.layout.activity_login, findViewById(R.id.content_frame));
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        hideMenu();
         initializeViews();
     }
 
@@ -74,6 +75,7 @@ public class Login extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Login.this, Register.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
         });
@@ -90,7 +92,8 @@ public class Login extends AppCompatActivity {
                 }
                 authViewModel.saveLogin(authResponse.getToken(), authResponse.getUserId());
 
-                Intent intent = new Intent(Login.this, MainActivity.class);
+                Intent intent = new Intent(Login.this, Profile.class);
+                intent.putExtra("userId", authResponse.getUserId());
                 startActivity(intent);
             } else {
                 tvLoginError.setText("An Error Occurred. please try again");
@@ -99,8 +102,17 @@ public class Login extends AppCompatActivity {
 
         // skip login if already logged in
         if (authViewModel.isLoggedIn()) {
-            Intent intent = new Intent(Login.this, MainActivity.class);
+            Intent intent = new Intent(Login.this, Profile.class);
+            intent.putExtra("userId", getUserId());
             startActivity(intent);
         }
+
+        authViewModel.getIsLoading().observe(this, isLoading -> {
+            if (isLoading) {
+                showLoading();
+            } else {
+                hideLoading();
+            }
+        });
     }
 }

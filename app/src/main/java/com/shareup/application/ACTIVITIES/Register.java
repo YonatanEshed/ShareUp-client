@@ -14,10 +14,11 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
 import com.shareup.viewmodel.AuthViewModel;
 
-public class Register extends AppCompatActivity {
+public class Register extends BaseActivity {
     AuthViewModel authViewModel;
 
     Button btnRegister, btnRegisterToLogin;
@@ -28,13 +29,15 @@ public class Register extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_register);
+//        setContentView(R.layout.activity_register);
+        getLayoutInflater().inflate(R.layout.activity_register, findViewById(R.id.content_frame));
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        hideMenu();
         initializeViews();
     }
 
@@ -75,6 +78,7 @@ public class Register extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Register.this, Login.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
         });
@@ -96,6 +100,15 @@ public class Register extends AppCompatActivity {
 
             } else {
                 tvRegisterError.setText("An Error Occurred. please try again"); // TODO: Show message returned by the API
+            }
+        });
+
+
+        authViewModel.getIsLoading().observe(this, isLoading -> {
+            if (isLoading) {
+                showLoading();
+            } else {
+                hideLoading();
             }
         });
     }
