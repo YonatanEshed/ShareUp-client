@@ -35,7 +35,7 @@ import retrofit2.http.Path;
 import retrofit2.http.Url;
 
 public abstract class BaseService {
-    private static final String BASE_URL = "https://us-central1-shareup-21b47.cloudfunctions.net/api/";
+    private static final String BASE_URL = "https://europe-west1-shareup-21b47.cloudfunctions.net/api/";
     protected String SERVICE_ROUTE = "";
 
     private static Retrofit retrofit;
