@@ -99,7 +99,7 @@ public class Register extends BaseActivity {
                 startActivity(intent);
 
             } else {
-                tvRegisterError.setText("An Error Occurred. please try again"); // TODO: Show message returned by the API
+                tvRegisterError.setText("An Error Occurred. please try again");
             }
         });
 
