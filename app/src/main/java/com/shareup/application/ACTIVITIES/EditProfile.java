@@ -1,6 +1,8 @@
 package com.shareup.application.ACTIVITIES;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -74,16 +76,14 @@ public class EditProfile extends BaseActivity {
 
         profileViewModel.getData().observe(this, profile -> {
             if (profile != null) {
-                if (profile.getServerMessage() != null) {
-                    tvEditProfileError.setText(profile.getServerMessage());
-                    return;
-                }
-
                 etEditProfileUsername.setText(profile.getUsername());
                 etEditProfileBio.setText(profile.getBio());
+            }
+        });
 
-            } else {
-                tvEditProfileError.setText("An error occurred");
+        profileViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                tvEditProfileError.setText(message);
             }
         });
 

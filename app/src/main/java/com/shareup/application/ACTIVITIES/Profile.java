@@ -2,11 +2,13 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -15,10 +17,12 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
+import com.shareup.viewmodel.PostViewModel;
 import com.shareup.viewmodel.ProfileViewModel;
 
 public class Profile extends BaseActivity {
     ProfileViewModel profileViewModel;
+    PostViewModel postViewModel;
 
     TextView tvPostsCount, tvFollowersCount, tvFollowingCount, tvProfileUsername, tvBio;
     Button btnProfileFollow, btnProfileMessage, btnEditProfile, btnProfileLogout;
@@ -97,8 +101,12 @@ public class Profile extends BaseActivity {
     @Override
     protected void setViewModel() {
         profileViewModel = new ProfileViewModel(getApplication());
+        postViewModel = new PostViewModel(getApplication());
         // obsereve data
         profileViewModel.getData().observe(this, profile -> {
+            if (profile == null) {
+                return;
+            }
 
             tvProfileUsername.setText(profile.getUsername());
             tvBio.setText(profile.getBio());
@@ -115,6 +123,12 @@ public class Profile extends BaseActivity {
             }
         });
 
+        profileViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         profileViewModel.getIsLoading().observe(this, isLoading -> {
             if (isLoading) {
                 showLoading();
@@ -123,7 +137,13 @@ public class Profile extends BaseActivity {
             }
         });
 
+        postViewModel.getData().observe(this, posts -> {
+            Log.d("Profile", "Posts: " + posts);
+            tvPostsCount.setText(String.valueOf(posts));
+        });
+
         profileViewModel.getProfile(userId);
+        postViewModel.getUserPosts(userId);
     }
 
 

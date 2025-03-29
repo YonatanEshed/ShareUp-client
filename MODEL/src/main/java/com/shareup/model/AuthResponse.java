@@ -26,7 +26,6 @@ public class AuthResponse extends BaseEntity {
         return "AuthResponse{" +
                 "token='" + token + '\'' +
                 ", userId='" + userId + '\'' +
-                ", message='" + getServerMessage() + '\'' +
                 '}';
     }
 }

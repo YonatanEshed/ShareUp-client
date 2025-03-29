@@ -4,11 +4,16 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.shareup.model.ApiResponse;
+
+import java.util.ArrayList;
+
 public abstract class BaseViewModel<T> extends ViewModel {
 
     protected MutableLiveData<T> data = new MutableLiveData<>();
+    protected MutableLiveData<ArrayList<T>> dataList = new MutableLiveData<>();
     protected MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
-    protected MutableLiveData<String> error = new MutableLiveData<>(null);
+    protected MutableLiveData<String> message = new MutableLiveData<>(null);
 
     public LiveData<T> getData() {
         return data;
@@ -18,22 +23,28 @@ public abstract class BaseViewModel<T> extends ViewModel {
         return isLoading;
     }
 
-    public LiveData<String> getError() {
-        return error;
+    public LiveData<String> getMessage() {
+        return message;
     }
 
     // Helper method to handle API requests
     protected void executeApiCall(ApiCall<T> apiCall) {
         isLoading.setValue(true);
-        error.setValue(null); // Clear previous errors
+        message.setValue(null); // Clear previous errors
 
         apiCall.execute(result -> {
             isLoading.postValue(false);
 
             if (result != null) {
-                data.postValue(result);
+                data.postValue(result.getData());
+                // ensure that if data is null, the message is not being set(to prevent display of a message when data was fetched successfully)
+                if (result.getData() == null) {
+                    message.postValue(result.getMessage());
+                } else {
+                    message.postValue(null);
+                }
             } else {
-                error.postValue("Failed to fetch data.");
+                message.postValue("Failed to fetch data.");
             }
         });
     }
@@ -45,7 +56,7 @@ public abstract class BaseViewModel<T> extends ViewModel {
 
     // Callback for API results
     public interface ApiCallback<T> {
-        void onResult(T result);
+        void onResult(ApiResponse<T> result);
     }
 }
 

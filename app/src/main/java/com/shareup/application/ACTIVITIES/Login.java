@@ -2,6 +2,7 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,6 +15,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
+import com.shareup.helper.inputValidators.EmailRule;
+import com.shareup.helper.inputValidators.Validator;
 import com.shareup.viewmodel.AuthViewModel;
 
 public class Login extends BaseActivity {
@@ -84,28 +87,18 @@ public class Login extends BaseActivity {
     protected void setViewModel() {
         authViewModel = new AuthViewModel(getApplication());
 
-        authViewModel.getData().observe(this, authResponse -> {
-            if (authResponse != null) {
-                if (authResponse.getServerMessage() != null && authResponse.getToken() == null) {
-                    tvLoginError.setText(authResponse.getServerMessage());
-                    return;
-                }
-                authViewModel.saveLogin(authResponse.getToken(), authResponse.getUserId());
+        authViewModel.getData().observe(this, authData -> {
+            if (authData != null) {
+                Log.d("AuthData", authData.toString());
+
+                authViewModel.saveLogin(authData.getToken(), authData.getUserId());
 
                 Intent intent = new Intent(Login.this, Profile.class);
-                intent.putExtra("userId", authResponse.getUserId());
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.putExtra("userId", authData.getUserId());
                 startActivity(intent);
-            } else {
-                tvLoginError.setText("An Error Occurred. please try again");
             }
         });
-
-        // skip login if already logged in
-        if (authViewModel.isLoggedIn()) {
-            Intent intent = new Intent(Login.this, Profile.class);
-            intent.putExtra("userId", getUserId());
-            startActivity(intent);
-        }
 
         authViewModel.getIsLoading().observe(this, isLoading -> {
             if (isLoading) {
@@ -114,5 +107,21 @@ public class Login extends BaseActivity {
                 hideLoading();
             }
         });
+
+        authViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                tvLoginError.setText(message);
+            }
+        });
+
+
+        // skip login if already logged in
+        if (authViewModel.isLoggedIn()) {
+            Intent intent = new Intent(Login.this, Profile.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra("userId", getUserId());
+            startActivity(intent);
+        }
+
     }
 }

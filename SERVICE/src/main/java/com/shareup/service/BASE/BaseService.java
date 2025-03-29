@@ -2,18 +2,13 @@ package com.shareup.service.BASE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.service.autofill.SaveRequest;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.shareup.model.BASE.BaseEntity;
-import com.shareup.model.BASE.BaseResponse;
-import com.shareup.model.MessageResponse;
+import com.shareup.model.ApiResponse;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -31,7 +26,6 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.DELETE;
 import retrofit2.http.Header;
-import retrofit2.http.Path;
 import retrofit2.http.Url;
 
 public abstract class BaseService {
@@ -98,7 +92,7 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
+    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, Class<T> dataClass, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
 
@@ -126,19 +120,14 @@ public abstract class BaseService {
             public void onResponse(Call<Object> call, Response<Object> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String json = gson.toJson(response.body());
-                    switch (type) {
-                        case SINGLE:
-                            T model = gson.fromJson(json, modelClass);
-                            Log.i("BaseService", model.toString());
-                            callback.accept(model);
-                            break;
-                        case LIST:
-                            Type listType = TypeToken.getParameterized(ArrayList.class, modelClass).getType();
-                            ArrayList<T> modelList = gson.fromJson(json, listType);
-                            Log.i("BaseService", modelList.toString());
-                            callback.accept(modelList);
-                            break;
-                    }
+                    Log.d("BaseService", "Response JSON: " + json);
+
+                    Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
+                    ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
+                    apiResponse.setStatusCode(response.code());
+                    Log.i("BaseService", apiResponse.toString());
+                    callback.accept(apiResponse);
+
                 } else if(response.errorBody() != null) {
                     try {
                         String json = gson.toJson(response.errorBody().string());
@@ -146,16 +135,15 @@ public abstract class BaseService {
                             json = gson.fromJson(json, String.class);
                         }
 
-                        Log.d("BaseService", json);
-                        MessageResponse message = gson.fromJson(json, MessageResponse.class);
+                        Log.d("BaseService", "Response JSON: " + json);
 
-                        BaseResponse model = (BaseEntity) modelClass.getConstructor().newInstance();
-                        model.setServerMessage(message.getMessage());
-                        model.setCode(response.code());
+                        Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
+                        ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
+                        apiResponse.setStatusCode(response.code());
+                        Log.i("BaseService", apiResponse.toString());
+                        callback.accept(apiResponse);
 
-                        callback.accept(model);
-                    } catch (IOException | InvocationTargetException | NoSuchMethodException |
-                             InstantiationException | IllegalAccessException e) {
+                    } catch (IOException e) {
                         Log.e("BaseService", "API Error: " + response.errorBody(), e);
                         callback.accept(null);
                     }
@@ -174,20 +162,20 @@ public abstract class BaseService {
         });
     }
 
-    protected <T> void get(String route, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
-        makeApiRequest("GET", route, null, modelClass, type, callback);
+    protected <T> void get(String route, Class<?> modelClass, Consumer<Object> callback) {
+        makeApiRequest("GET", route, null, modelClass, callback);
     }
 
-    protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
-        makeApiRequest("POST", route, body, modelClass, type, callback);
+    protected <T> void post(String route, Map<String, Object> body, Class<?> modelClass, Consumer<Object> callback) {
+        makeApiRequest("POST", route, body, modelClass, callback);
     }
 
-    protected <T> void put(String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
-        makeApiRequest("PUT", route, body, modelClass, type, callback);
+    protected <T> void put(String route, Map<String, Object> body, Class<?> modelClass, Consumer<Object> callback) {
+        makeApiRequest("PUT", route, body, modelClass, callback);
     }
 
-    protected <T> void delete(String route, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
-        makeApiRequest("DELETE", route, null, modelClass, type, callback);
+    protected <T> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest("DELETE", route, null, modelClass, callback);
     }
 
     interface ApiService {
@@ -202,11 +190,5 @@ public abstract class BaseService {
 
         @DELETE
         Call<Object> delete(@Url String url, @Header("Authorization") String token);
-    }
-
-    protected enum ResponseType {
-        SINGLE,
-        LIST,
-        MESSAGE
     }
 }

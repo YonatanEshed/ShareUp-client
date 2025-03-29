@@ -2,6 +2,8 @@ package com.shareup.service;
 
 import android.content.Context;
 
+import com.shareup.model.ApiResponse;
+import com.shareup.model.AuthResponse;
 import com.shareup.model.Profile;
 import com.shareup.service.BASE.BaseService;
 
@@ -13,13 +15,13 @@ public class ProfileService extends BaseService {
         this.SERVICE_ROUTE = "profile/";
     }
 
-    public void getProfile(String userId, Consumer<Profile> callback) {
+    public void getProfile(String userId, Consumer<ApiResponse<Profile>> callback) {
         String route = userId + "/";
-        get(route, Profile.class, ResponseType.SINGLE, response -> callback.accept((Profile) response));
+        get(route, Profile.class, response -> callback.accept((ApiResponse<Profile>) response));
     }
 
-    public void updateProfile(Profile profile, Consumer<Profile> callback) {
+    public void updateProfile(Profile profile, Consumer<ApiResponse<Profile>> callback) {
         String route = "";
-        put(route, profile.toMap(), Profile.class, ResponseType.MESSAGE, response -> callback.accept((Profile) response));
+        put(route, profile.toMap(), Profile.class, response -> callback.accept((ApiResponse<Profile>) response));
     }
 }
