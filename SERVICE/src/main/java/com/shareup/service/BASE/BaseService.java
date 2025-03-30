@@ -9,6 +9,7 @@ import com.shareup.model.ApiResponse;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -92,7 +93,7 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, Class<T> dataClass, Consumer<Object> callback) {
+    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, ResponseType responseType, Class<T> dataClass, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
 
@@ -122,12 +123,22 @@ public abstract class BaseService {
                     String json = gson.toJson(response.body());
                     Log.d("BaseService", "Response JSON: " + json);
 
-                    Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
-                    ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
-                    apiResponse.setStatusCode(response.code());
-                    Log.i("BaseService", apiResponse.toString());
-                    callback.accept(apiResponse);
-
+                    if (responseType == ResponseType.SINGLE) {
+                        Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
+                        ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
+                        apiResponse.setStatusCode(response.code());
+                        Log.i("BaseService", apiResponse.toString());
+                        callback.accept(apiResponse);
+                    } else if (responseType == ResponseType.LIST) {
+                        Type responseType = TypeToken.getParameterized(ApiResponse.class, TypeToken.getParameterized(ArrayList.class, dataClass).getType()).getType();
+                        ApiResponse<ArrayList<T>> apiResponse = gson.fromJson(json, responseType);
+                        apiResponse.setStatusCode(response.code());
+                        Log.i("BaseService", apiResponse.toString());
+                        callback.accept(apiResponse);
+                    } else {
+                        Log.e("BaseService", "Unsupported response type: " + responseType);
+                        callback.accept(null);
+                    }
                 } else if(response.errorBody() != null) {
                     try {
                         String json = gson.toJson(response.errorBody().string());
@@ -163,19 +174,35 @@ public abstract class BaseService {
     }
 
     protected <T> void get(String route, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("GET", route, null, modelClass, callback);
+        makeApiRequest("GET", route, null, ResponseType.SINGLE, modelClass, callback);
+    }
+
+    protected <T> void get(String route, ResponseType responseType, Class<?> modelClass, Consumer<Object> callback) {
+        makeApiRequest("GET", route, null, responseType, modelClass, callback);
     }
 
     protected <T> void post(String route, Map<String, Object> body, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("POST", route, body, modelClass, callback);
+        makeApiRequest("POST", route, body, ResponseType.SINGLE, modelClass, callback);
+    }
+
+    protected <T> void post(String route, Map<String, Object> body, ResponseType responseType, Class<?> modelClass, Consumer<Object> callback) {
+        makeApiRequest("POST", route, body, responseType, modelClass, callback);
     }
 
     protected <T> void put(String route, Map<String, Object> body, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("PUT", route, body, modelClass, callback);
+        makeApiRequest("PUT", route, body, ResponseType.SINGLE, modelClass, callback);
+    }
+
+    protected <T> void put(String route, Map<String, Object> body, ResponseType responseType, Class<?> modelClass, Consumer<Object> callback) {
+        makeApiRequest("PUT", route, body, responseType, modelClass, callback);
     }
 
     protected <T> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest("DELETE", route, null, modelClass, callback);
+        makeApiRequest("DELETE", route, null, ResponseType.SINGLE, modelClass, callback);
+    }
+
+    protected <T> void delete(String route, ResponseType responseType, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest("DELETE", route, null, responseType, modelClass, callback);
     }
 
     interface ApiService {
@@ -190,5 +217,10 @@ public abstract class BaseService {
 
         @DELETE
         Call<Object> delete(@Url String url, @Header("Authorization") String token);
+    }
+
+    protected enum ResponseType {
+        SINGLE,
+        LIST
     }
 }

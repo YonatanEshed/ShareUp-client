@@ -19,6 +19,10 @@ public abstract class BaseViewModel<T> extends ViewModel {
         return data;
     }
 
+    public LiveData<ArrayList<T>> getDataList() {
+        return dataList;
+    }
+
     public LiveData<Boolean> getIsLoading() {
         return isLoading;
     }
@@ -43,6 +47,29 @@ public abstract class BaseViewModel<T> extends ViewModel {
                 } else {
                     message.postValue(null);
                 }
+            } else {
+                message.postValue("Failed to fetch data.");
+            }
+        });
+    }
+
+    protected void executeListApiCall(ApiCall<ArrayList<T>> apiCall) {
+        isLoading.setValue(true);
+        message.setValue(null); // Clear previous errors
+
+        apiCall.execute(result -> {
+            isLoading.postValue(false);
+
+            if (result != null) {
+                // ensure that if data is null, the message is not being set(to prevent display of a message when data was fetched successfully)
+                if (result.getData() == null) {
+                    dataList.postValue(new ArrayList<>());
+                    message.postValue(result.getMessage());
+                } else {
+                    dataList.postValue(result.getData());
+                    message.postValue(null);
+                }
+
             } else {
                 message.postValue("Failed to fetch data.");
             }
