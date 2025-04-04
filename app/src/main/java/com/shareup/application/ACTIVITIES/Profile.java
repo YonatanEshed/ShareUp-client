@@ -14,23 +14,32 @@ import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
+import com.shareup.application.ADPTERS.ImageAdapter;
 import com.shareup.application.R;
+import com.shareup.model.Post;
 import com.shareup.viewmodel.PostViewModel;
 import com.shareup.viewmodel.ProfileViewModel;
+
+import java.util.ArrayList;
 
 public class Profile extends BaseActivity {
     ProfileViewModel profileViewModel;
     PostViewModel postViewModel;
 
+    ImageAdapter postsAdapter;
+
     TextView tvPostsCount, tvFollowersCount, tvFollowingCount, tvProfileUsername, tvBio;
     Button btnProfileFollow, btnProfileMessage, btnEditProfile, btnProfileLogout;
     ImageView ivProfilePicture;
     LinearLayout profileButtons, profileButtonsOwn;
+    RecyclerView rvProfilePosts;
 
     String userId;
-
+    ArrayList<Post> profilePosts = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +79,14 @@ public class Profile extends BaseActivity {
         // LinearLayouts
         profileButtons = findViewById(R.id.profileButtons);
         profileButtonsOwn = findViewById(R.id.profileButtonsOwn);
+
+        // RecyclerView
+        rvProfilePosts = findViewById(R.id.rvProfilePosts);
+
+
+        postsAdapter = new ImageAdapter(this, profilePosts);
+        rvProfilePosts.setLayoutManager(new GridLayoutManager(this, 3));
+        rvProfilePosts.setAdapter(postsAdapter);
 
         // get user id
         userId = getIntent().getStringExtra("userId");
@@ -112,7 +129,6 @@ public class Profile extends BaseActivity {
             tvBio.setText(profile.getBio());
             tvFollowingCount.setText(String.valueOf(profile.getFollowingCount()));
             tvFollowersCount.setText(String.valueOf(profile.getFollowersCount()));
-//            tvPostsCount.setText(String.valueOf(profile.getPostsCount()));
 
             if (profile.getId().equals(userId)) {
                 profileButtons.setVisibility(View.GONE);
@@ -137,16 +153,19 @@ public class Profile extends BaseActivity {
             }
         });
 
-        postViewModel.getData().observe(this, posts -> {
-            Log.d("Profile", "Posts: " + posts);
-            tvPostsCount.setText(String.valueOf(posts));
+        postViewModel.getDataList().observe(this, posts -> {
+            tvPostsCount.setText(String.valueOf(posts.size()));
+
+            profilePosts.clear();
+            profilePosts.addAll(posts);
+            postsAdapter.notifyDataSetChanged();
+
+            Log.d("Profile", "Posts: " + profilePosts);
         });
 
         profileViewModel.getProfile(userId);
         postViewModel.getUserPosts(userId);
     }
-
-
 
     @Override
     protected void onResume() {
