@@ -15,6 +15,11 @@ public class PostService extends BaseService {
         this.SERVICE_ROUTE = "posts/";
     }
 
+    public void getPost(String postId, Consumer<ApiResponse<Post>> callback) {
+        String route = postId + "/";
+        get(route, Post.class, response -> callback.accept((ApiResponse<Post>) response));
+    }
+
     public void getUserPosts(String userId, Consumer<ApiResponse<ArrayList<Post>>> callback) {
         String route = "user/" + userId + "/";
         get(route, ResponseType.LIST, Post.class, response -> callback.accept((ApiResponse<ArrayList<Post>>) response));

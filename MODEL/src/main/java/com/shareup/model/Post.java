@@ -7,23 +7,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Post extends BaseEntity {
-    private String userId;
     private String mediaURL;
     private String caption;
     private int likesCount;
     private Date createdAt;
+    private Profile user;
 
     public Post() {
         super();
-        userId = "";
+        user = new Profile();
         mediaURL = "";
         caption = "";
         likesCount = 0;
         createdAt = new Date();
-    }
-
-    public String getUserId() {
-        return userId;
     }
 
     public String getMediaURL() {
@@ -46,10 +42,19 @@ public class Post extends BaseEntity {
         return createdAt;
     }
 
+    public Profile getUser() {
+        return user;
+    }
+
+    public void setUser(Profile user) {
+        this.user = user;
+    }
+
     @Override
     public String toString() {
         return "Post{" +
-                "userId='" + userId + '\'' +
+                "userId='" + user.getId() + '\'' +
+                "username='" + user.getUsername() + '\'' +
                 ", mediaURL='" + mediaURL + '\'' +
                 ", caption='" + caption + '\'' +
                 ", likesCount=" + likesCount +

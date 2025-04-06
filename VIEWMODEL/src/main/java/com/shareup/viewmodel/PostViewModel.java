@@ -14,6 +14,10 @@ public class PostViewModel extends BaseViewModel<Post> {
         this.postService = new PostService(application);
     }
 
+    public void getPost(String postId) {
+        executeApiCall(callback -> postService.getPost(postId, callback::onResult));
+    }
+
     public void getUserPosts(String userId) {
         executeListApiCall(callback -> postService.getUserPosts(userId, callback::onResult));
     }
