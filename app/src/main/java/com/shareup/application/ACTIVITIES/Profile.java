@@ -17,8 +17,9 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
-import com.shareup.application.ADPTERS.ImageAdapter;
+import com.shareup.application.ADPTERS.PostAdapter;
 import com.shareup.application.R;
 import com.shareup.model.Post;
 import com.shareup.viewmodel.PostViewModel;
@@ -30,7 +31,7 @@ public class Profile extends BaseActivity {
     ProfileViewModel profileViewModel;
     PostViewModel postViewModel;
 
-    ImageAdapter postsAdapter;
+    PostAdapter postsAdapter;
 
     TextView tvPostsCount, tvFollowersCount, tvFollowingCount, tvProfileUsername, tvBio;
     Button btnProfileFollow, btnProfileMessage, btnEditProfile, btnProfileLogout;
@@ -39,7 +40,6 @@ public class Profile extends BaseActivity {
     RecyclerView rvProfilePosts;
 
     String userId;
-    ArrayList<Post> profilePosts = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +55,7 @@ public class Profile extends BaseActivity {
 
         initializeViews();
         setViewModel();
+        setAdapters();
         setListeners();
     }
 
@@ -83,11 +84,6 @@ public class Profile extends BaseActivity {
         // RecyclerView
         rvProfilePosts = findViewById(R.id.rvProfilePosts);
 
-
-        postsAdapter = new ImageAdapter(this, profilePosts);
-        rvProfilePosts.setLayoutManager(new GridLayoutManager(this, 3));
-        rvProfilePosts.setAdapter(postsAdapter);
-
         // get user id
         userId = getIntent().getStringExtra("userId");
     }
@@ -112,7 +108,36 @@ public class Profile extends BaseActivity {
             logout();
         });
 
+        postsAdapter.setOnItemClickListener((item, position) -> {
+            // Open SinglePost activity
+            Intent intent = new Intent(Profile.this, SinglePost.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra("postId", item.getId());
+            startActivity(intent);
+        });
+    }
 
+    protected void setAdapters() {
+        postsAdapter = new PostAdapter(new ArrayList<>(), R.layout.post_overview,
+                holder -> {
+                    // Initialize ViewHolder
+                    holder.putView("ivPostPicture", holder.itemView.findViewById(R.id.ivPostOverview));
+                },
+                (holder, item, position) -> {
+                    // Bind ViewHolder
+                    ImageView ivPostPicture = holder.getView("ivPostPicture");
+                    Glide.with(getApplicationContext()).load(item.getMediaURL()).into(ivPostPicture);
+                });
+
+        postsAdapter.setOnItemClickListener((item, position) -> {
+            // Open SinglePost activity
+            Intent intent = new Intent(Profile.this, SinglePost.class);
+            intent.putExtra("postId", item.getId());
+            startActivity(intent);
+        });
+
+        rvProfilePosts.setLayoutManager(new GridLayoutManager(this, 3));
+        rvProfilePosts.setAdapter(postsAdapter);
     }
 
     @Override
@@ -156,11 +181,7 @@ public class Profile extends BaseActivity {
         postViewModel.getDataList().observe(this, posts -> {
             tvPostsCount.setText(String.valueOf(posts.size()));
 
-            profilePosts.clear();
-            profilePosts.addAll(posts);
-            postsAdapter.notifyDataSetChanged();
-
-            Log.d("Profile", "Posts: " + profilePosts);
+            postsAdapter.setItems(posts);
         });
 
         profileViewModel.getProfile(userId);
