@@ -15,6 +15,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
 import com.shareup.helper.FileUtil;
@@ -100,6 +101,10 @@ public class EditProfile extends BaseActivity {
             if (profile != null) {
                 etEditProfileUsername.setText(profile.getUsername());
                 etEditProfileBio.setText(profile.getBio());
+
+                if (profile.getProfilePicture() != null) {
+                    Glide.with(getApplicationContext()).load(profile.getProfilePicture()).into(ibEditProfilePicture);
+                }
             }
         });
 

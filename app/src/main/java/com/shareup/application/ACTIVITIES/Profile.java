@@ -111,7 +111,6 @@ public class Profile extends BaseActivity {
         postsAdapter.setOnItemClickListener((item, position) -> {
             // Open SinglePost activity
             Intent intent = new Intent(Profile.this, SinglePost.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.putExtra("postId", item.getId());
             startActivity(intent);
         });
@@ -154,6 +153,10 @@ public class Profile extends BaseActivity {
             tvBio.setText(profile.getBio());
             tvFollowingCount.setText(String.valueOf(profile.getFollowingCount()));
             tvFollowersCount.setText(String.valueOf(profile.getFollowersCount()));
+
+            if (profile.getProfilePicture() != null) {
+                Glide.with(getApplicationContext()).load(profile.getProfilePicture()).into(ivProfilePicture);
+            }
 
             if (profile.getId().equals(userId)) {
                 profileButtons.setVisibility(View.GONE);

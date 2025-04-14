@@ -67,7 +67,6 @@ public class SinglePost extends BaseActivity {
             // Handle like button click
 //            postViewModel.likePost(postId);
             // change icon to filled heart
-            ibPostLike.setImageResource(R.drawable.favorite_fill_24px);
         });
 
         ibPostComment.setOnClickListener(v -> {
@@ -95,8 +94,9 @@ public class SinglePost extends BaseActivity {
             tvPostDescription.setText(post.getCaption());
 
             Glide.with(getApplicationContext()).load(post.getMediaURL()).into(ivPostPicture);
-            // add profile picture
-//            Glide.with(getApplicationContext()).load(post.getUser().get).into(ivProfilePicture);
+            if (post.getUser().getProfilePicture() != null) {
+                Glide.with(getApplicationContext()).load(post.getUser().getProfilePicture()).into(ivProfilePicture);
+            }
         });
 
         // Load the post data
