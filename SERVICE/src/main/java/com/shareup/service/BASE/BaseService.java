@@ -7,14 +7,20 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.shareup.model.ApiResponse;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -23,10 +29,13 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.DELETE;
 import retrofit2.http.Header;
+import retrofit2.http.Part;
+import retrofit2.http.PartMap;
 import retrofit2.http.Url;
 
 public abstract class BaseService {
@@ -93,19 +102,44 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, ResponseType responseType, Class<T> dataClass, Consumer<Object> callback) {
+    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, File file, ResponseType responseType, Class<T> dataClass, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
+
+        MultipartBody.Builder multipartBuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        MultipartBody multipartBody = null;
+
+        MultipartBody.Part filePart = null;
+        Map<String, RequestBody> partMap = new HashMap<>();
+
+        // Add file to the multipart request
+        if (file != null) {
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
+            filePart = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+        }
+
+// Add dynamic body parameters to the part map
+        if (body != null) {
+            for (Map.Entry<String, Object> entry : body.entrySet()) {
+                partMap.put(entry.getKey(), RequestBody.create(MediaType.parse("text/plain"), entry.getValue().toString()));
+            }
+        }
 
         switch (method) {
             case "GET":
                 call = apiService.get(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
                 break;
             case "POST":
-                call = apiService.post(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
+                if (file != null)
+                    call = apiService.postWithFile(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), filePart, partMap);
+                else
+                    call = apiService.post(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
                 break;
             case "PUT":
-                call = apiService.put(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
+                if (file != null)
+                    call = apiService.putWithFile(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), filePart, partMap);
+                else
+                    call = apiService.put(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
                 break;
             case "DELETE":
                 call = apiService.delete(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
@@ -174,35 +208,31 @@ public abstract class BaseService {
     }
 
     protected <T> void get(String route, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("GET", route, null, ResponseType.SINGLE, modelClass, callback);
+        makeApiRequest("GET", route, null, null, ResponseType.SINGLE, modelClass, callback);
     }
 
     protected <T> void get(String route, ResponseType responseType, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("GET", route, null, responseType, modelClass, callback);
+        makeApiRequest("GET", route, null, null, responseType, modelClass, callback);
     }
 
     protected <T> void post(String route, Map<String, Object> body, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("POST", route, body, ResponseType.SINGLE, modelClass, callback);
+        makeApiRequest("POST", route, body, null, ResponseType.SINGLE, modelClass, callback);
     }
 
-    protected <T> void post(String route, Map<String, Object> body, ResponseType responseType, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("POST", route, body, responseType, modelClass, callback);
+    protected <T> void post(String route, Map<String, Object> body, File file, Class<?> modelClass, Consumer<Object> callback) {
+        makeApiRequest("POST", route, body, file, ResponseType.SINGLE, modelClass, callback);
     }
 
     protected <T> void put(String route, Map<String, Object> body, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("PUT", route, body, ResponseType.SINGLE, modelClass, callback);
+        makeApiRequest("PUT", route, body, null, ResponseType.SINGLE, modelClass, callback);
     }
 
-    protected <T> void put(String route, Map<String, Object> body, ResponseType responseType, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("PUT", route, body, responseType, modelClass, callback);
+    protected <T> void put(String route, Map<String, Object> body, File file, Class<?> modelClass, Consumer<Object> callback) {
+        makeApiRequest("PUT", route, body, file, ResponseType.SINGLE, modelClass, callback);
     }
 
     protected <T> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest("DELETE", route, null, ResponseType.SINGLE, modelClass, callback);
-    }
-
-    protected <T> void delete(String route, ResponseType responseType, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest("DELETE", route, null, responseType, modelClass, callback);
+        makeApiRequest("DELETE", route, null, null, ResponseType.SINGLE, modelClass, callback);
     }
 
     interface ApiService {
@@ -217,6 +247,14 @@ public abstract class BaseService {
 
         @DELETE
         Call<Object> delete(@Url String url, @Header("Authorization") String token);
+
+        @Multipart
+        @POST
+        Call<Object> postWithFile(@Url String url, @Header("Authorization") String token, @Part MultipartBody.Part file, @PartMap Map<String, RequestBody> partMap);
+
+        @Multipart
+        @PUT
+        Call<Object> putWithFile(@Url String url, @Header("Authorization") String token, @Part MultipartBody.Part file, @PartMap Map<String, RequestBody> partMap);
     }
 
     protected enum ResponseType {
