@@ -118,11 +118,16 @@ public abstract class BaseService {
             filePart = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
         }
 
-// Add dynamic body parameters to the part map
+        // Add dynamic body parameters to the part map
         if (body != null) {
             for (Map.Entry<String, Object> entry : body.entrySet()) {
                 partMap.put(entry.getKey(), RequestBody.create(MediaType.parse("text/plain"), entry.getValue().toString()));
             }
+        }
+
+        // initialize empty body if null
+        if (body == null) {
+            body = new HashMap<>();
         }
 
         switch (method) {
