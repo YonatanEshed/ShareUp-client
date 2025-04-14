@@ -11,6 +11,7 @@ public class Post extends BaseEntity {
     private String caption;
     private int likesCount;
     private Date createdAt;
+    private boolean isLiked;
     private Profile user;
 
     public Post() {
@@ -40,6 +41,14 @@ public class Post extends BaseEntity {
 
     public Date getCreatedAt() {
         return createdAt;
+    }
+
+    public boolean isLiked() {
+        return isLiked;
+    }
+
+    public void setLiked(boolean liked) {
+        isLiked = liked;
     }
 
     public Profile getUser() {
