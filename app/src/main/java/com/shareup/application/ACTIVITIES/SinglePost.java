@@ -1,11 +1,13 @@
 package com.shareup.application.ACTIVITIES;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,8 +31,11 @@ public class SinglePost extends BaseActivity {
     ImageView ivProfilePicture, ivPostPicture;
     ImageButton ibPostLike, ibPostComment;
     Button btnViewComments;
+    LinearLayout llProfileContainer;
 
     String postId;
+    String userId;
+
     boolean isLiked = false;
     int likesCount = 0;
 
@@ -56,14 +61,24 @@ public class SinglePost extends BaseActivity {
 
     @Override
     protected void initializeViews() {
+        // TextViews
         tvPostUsername = findViewById(R.id.tvPostUsername);
         tvPostLikesCount = findViewById(R.id.tvPostLikesCount);
         tvPostDescription = findViewById(R.id.tvPostDescription);
+
+        // ImageViews
         ivProfilePicture = findViewById(R.id.ivProfilePicture);
         ivPostPicture = findViewById(R.id.ivPostPicture);
+
+        // ImageButtons
         ibPostLike = findViewById(R.id.ibPostLike);
         ibPostComment = findViewById(R.id.ibPostComment);
+
+        // Button
         btnViewComments = findViewById(R.id.btnViewComments);
+
+        // LinearLayout
+        llProfileContainer = findViewById(R.id.llProfileContainer);
 
         // Get the postId from the intent
         postId = getIntent().getStringExtra("postId");
@@ -93,6 +108,13 @@ public class SinglePost extends BaseActivity {
 
         btnViewComments.setOnClickListener(v -> {
             // Open CommentActivity
+        });
+
+        llProfileContainer.setOnClickListener(v -> {
+            Intent intent = new Intent(SinglePost.this, Profile.class);
+            intent.putExtra("userId", userId);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         });
     }
 
@@ -128,6 +150,8 @@ public class SinglePost extends BaseActivity {
             }
 
             setLikeCount(post.getLikesCount());
+
+            userId = post.getUser().getId();
         });
 
         likeViewModel.getData().observe(this, success -> {
