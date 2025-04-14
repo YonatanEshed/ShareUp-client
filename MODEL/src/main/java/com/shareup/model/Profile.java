@@ -10,6 +10,7 @@ import java.util.Map;
 public class Profile extends BaseEntity {
     private String username;
     private String bio;
+    private String profilePicture;
     private int followingsCount;
     private int followersCount;
 
@@ -35,6 +36,14 @@ public class Profile extends BaseEntity {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 
     public int getFollowingCount() {

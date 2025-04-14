@@ -6,6 +6,8 @@ import com.shareup.model.Profile;
 import com.shareup.service.ProfileService;
 import com.shareup.viewmodel.BASE.BaseViewModel;
 
+import java.io.File;
+
 public class ProfileViewModel extends BaseViewModel<Profile> {
     private final ProfileService profileService;
 
@@ -22,5 +24,12 @@ public class ProfileViewModel extends BaseViewModel<Profile> {
         profile.setUsername(username);
         profile.setBio(bio);
         executeApiCall(callback -> profileService.updateProfile(profile, callback::onResult));
+    }
+
+    public void updateProfile(String username, String bio, File profilePicture) {
+        Profile profile = new Profile();
+        profile.setUsername(username);
+        profile.setBio(bio);
+        executeApiCall(callback -> profileService.updateProfileWithImage(profile, profilePicture, callback::onResult));
     }
 }
