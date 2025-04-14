@@ -3,6 +3,7 @@ package com.shareup.model;
 public class ApiResponse<T> {
     private T data;
     private String message;
+    private String error;
     private int statusCode;
 
     public ApiResponse() {
@@ -23,6 +24,10 @@ public class ApiResponse<T> {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getError() {
+        return error;
     }
 
     public int getStatusCode() {
