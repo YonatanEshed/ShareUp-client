@@ -16,7 +16,7 @@
         android:scaleType="centerCrop"
         android:background="@drawable/circle_background"
         android:clipToOutline="true"
-        android:src="@android:drawable/btn_star_big_on"
+        android:src="@drawable/ic_deafult_profile_picture"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"
