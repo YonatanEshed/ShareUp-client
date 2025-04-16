@@ -3,6 +3,7 @@ package com.shareup.model;
 public class ApiResponse<T> {
     private T data;
     private String message;
+    private boolean success;
     private String error;
     private int statusCode;
 
@@ -10,12 +11,14 @@ public class ApiResponse<T> {
         this.data = null;
         this.message = "";
         this.statusCode = 0;
+        success = true;
     }
 
-    public ApiResponse(T data, String message, int statusCode) {
+    public ApiResponse(T data, String message, int statusCode, boolean success) {
         this.data = data;
         this.message = message;
         this.statusCode = statusCode;
+        this.success = success;
     }
 
     public T getData() {
@@ -24,6 +27,14 @@ public class ApiResponse<T> {
 
     public String getMessage() {
         return message;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
 
     public String getError() {

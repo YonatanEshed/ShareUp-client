@@ -165,13 +165,19 @@ public abstract class BaseService {
                     if (responseType == ResponseType.SINGLE) {
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
                         ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
+
                         apiResponse.setStatusCode(response.code());
+                        apiResponse.setSuccess(true);
+
                         Log.i("BaseService", apiResponse.toString());
                         callback.accept(apiResponse);
                     } else if (responseType == ResponseType.LIST) {
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, TypeToken.getParameterized(ArrayList.class, dataClass).getType()).getType();
                         ApiResponse<ArrayList<T>> apiResponse = gson.fromJson(json, responseType);
+
                         apiResponse.setStatusCode(response.code());
+                        apiResponse.setSuccess(true);
+
                         Log.i("BaseService", apiResponse.toString());
                         callback.accept(apiResponse);
                     } else {
@@ -189,7 +195,10 @@ public abstract class BaseService {
 
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
                         ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
+
                         apiResponse.setStatusCode(response.code());
+                        apiResponse.setSuccess(false);
+
                         Log.i("BaseService", apiResponse.toString());
                         callback.accept(apiResponse);
 

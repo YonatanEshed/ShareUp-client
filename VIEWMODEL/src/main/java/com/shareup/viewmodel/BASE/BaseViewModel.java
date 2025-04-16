@@ -12,6 +12,7 @@ public abstract class BaseViewModel<T> extends ViewModel {
 
     protected MutableLiveData<T> data = new MutableLiveData<>();
     protected MutableLiveData<ArrayList<T>> dataList = new MutableLiveData<>();
+    protected MutableLiveData<Boolean> success = new MutableLiveData<>();
     protected MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     protected MutableLiveData<String> message = new MutableLiveData<>(null);
 
@@ -21,6 +22,10 @@ public abstract class BaseViewModel<T> extends ViewModel {
 
     public LiveData<ArrayList<T>> getDataList() {
         return dataList;
+    }
+
+    public LiveData<Boolean> getSuccess() {
+        return success;
     }
 
     public LiveData<Boolean> getIsLoading() {
@@ -41,6 +46,7 @@ public abstract class BaseViewModel<T> extends ViewModel {
 
             if (result != null) {
                 data.postValue(result.getData());
+                success.postValue(result.isSuccess());
                 // ensure that if data is null, the message is not being set(to prevent display of a message when data was fetched successfully)
                 if (result.getData() == null) {
                     message.postValue(result.getMessage());
