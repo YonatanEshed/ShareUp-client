@@ -3,6 +3,7 @@ package com.shareup.service;
 import android.content.Context;
 
 import com.shareup.model.ApiResponse;
+import com.shareup.model.Comment;
 import com.shareup.model.Post;
 import com.shareup.service.BASE.BaseService;
 
@@ -26,13 +27,13 @@ public class PostService extends BaseService {
         get(route, ResponseType.LIST, Post.class, response -> callback.accept((ApiResponse<ArrayList<Post>>) response));
     }
 
-    public void likePost(String postId, Consumer<ApiResponse<Boolean>> callback) {
+    public void likePost(String postId, Consumer<ApiResponse<Void>> callback) {
         String route = postId + "/like/";
-        post(route, null, Boolean.class, response -> callback.accept((ApiResponse<Boolean>) response));
+        post(route, null, Boolean.class, response -> callback.accept((ApiResponse<Void>) response));
     }
 
-    public void unlikePost(String postId, Consumer<ApiResponse<Boolean>> callback) {
+    public void unlikePost(String postId, Consumer<ApiResponse<Void>> callback) {
         String route = postId + "/like/";
-        delete(route, Boolean.class, response -> callback.accept((ApiResponse<Boolean>) response));
+        delete(route, Boolean.class, response -> callback.accept((ApiResponse<Void>) response));
     }
 }

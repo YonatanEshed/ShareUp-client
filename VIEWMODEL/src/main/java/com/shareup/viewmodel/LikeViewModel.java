@@ -5,7 +5,7 @@ import android.app.Application;
 import com.shareup.service.PostService;
 import com.shareup.viewmodel.BASE.BaseViewModel;
 
-public class LikeViewModel extends BaseViewModel<Boolean> {
+public class LikeViewModel extends BaseViewModel<Void> {
     private final PostService postService;
 
     public LikeViewModel(Application application) {

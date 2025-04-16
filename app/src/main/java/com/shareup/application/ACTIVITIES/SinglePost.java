@@ -154,7 +154,7 @@ public class SinglePost extends BaseActivity {
             userId = post.getUser().getId();
         });
 
-        likeViewModel.getData().observe(this, success -> {
+        likeViewModel.getSuccess().observe(this, success -> {
             if (success == null || !success) {
                 // toggle like back to previous state
                 toggleLike();
