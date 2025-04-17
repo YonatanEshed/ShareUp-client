@@ -16,6 +16,8 @@ public abstract class BaseViewModel<T> extends ViewModel {
     protected MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     protected MutableLiveData<String> message = new MutableLiveData<>(null);
 
+    protected static int statusCode = 0;
+
     public LiveData<T> getData() {
         return data;
     }
@@ -36,6 +38,10 @@ public abstract class BaseViewModel<T> extends ViewModel {
         return message;
     }
 
+    public int getStatusCode() {
+        return statusCode;
+    }
+
     // Helper method to handle API requests
     protected void executeApiCall(ApiCall<T> apiCall) {
         isLoading.setValue(true);
@@ -45,6 +51,7 @@ public abstract class BaseViewModel<T> extends ViewModel {
             isLoading.postValue(false);
 
             if (result != null) {
+                statusCode = result.getStatusCode();
                 data.postValue(result.getData());
                 success.postValue(result.isSuccess());
                 // ensure that if data is null, the message is not being set(to prevent display of a message when data was fetched successfully)
@@ -68,6 +75,7 @@ public abstract class BaseViewModel<T> extends ViewModel {
 
             if (result != null) {
                 // ensure that if data is null, the message is not being set(to prevent display of a message when data was fetched successfully)
+                statusCode = result.getStatusCode();
                 if (result.getData() == null) {
                     dataList.postValue(new ArrayList<>());
                     message.postValue(result.getMessage());

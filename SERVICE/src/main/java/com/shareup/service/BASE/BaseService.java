@@ -6,6 +6,9 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.shareup.model.ApiResponse;
+import com.shareup.model.BASE.ApiMethod;
+import com.shareup.model.BASE.BaseEntity;
+import com.shareup.model.EmptyResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -102,7 +105,7 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, File file, ResponseType responseType, Class<T> dataClass, Consumer<Object> callback) {
+    protected <T extends BaseEntity> void makeApiRequest(ApiMethod method, String route, Map<String, Object> body, File file, ResponseType responseType, Class<T> dataClass, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
 
@@ -131,22 +134,22 @@ public abstract class BaseService {
         }
 
         switch (method) {
-            case "GET":
+            case GET:
                 call = apiService.get(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
                 break;
-            case "POST":
+            case POST:
                 if (file != null)
                     call = apiService.postWithFile(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), filePart, partMap);
                 else
                     call = apiService.post(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
                 break;
-            case "PUT":
+            case PUT:
                 if (file != null)
                     call = apiService.putWithFile(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), filePart, partMap);
                 else
                     call = apiService.put(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
                 break;
-            case "DELETE":
+            case DELETE:
                 call = apiService.delete(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
                 break;
             default:
@@ -164,10 +167,21 @@ public abstract class BaseService {
 
                     if (responseType == ResponseType.SINGLE) {
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
+                        Log.d("BaseService", "Response Type: " + responseType);
                         ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
 
                         apiResponse.setStatusCode(response.code());
                         apiResponse.setSuccess(true);
+
+                        if (apiResponse.getData() == null) {
+                            try {
+                                T newInstance = dataClass.getDeclaredConstructor().newInstance();
+                                apiResponse.setData(newInstance);
+                            } catch (Exception e) {
+                                Log.e("BaseService", "Error creating new instance of " + dataClass.getSimpleName(), e);
+                            }
+                        }
+                        apiResponse.getData().setActionType(method);
 
                         Log.i("BaseService", apiResponse.toString());
                         callback.accept(apiResponse);
@@ -221,32 +235,32 @@ public abstract class BaseService {
         });
     }
 
-    protected <T> void get(String route, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("GET", route, null, null, ResponseType.SINGLE, modelClass, callback);
+    protected <T extends BaseEntity> void get(String route, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.GET, route, null, null, ResponseType.SINGLE, modelClass, callback);
     }
 
-    protected <T> void get(String route, ResponseType responseType, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("GET", route, null, null, responseType, modelClass, callback);
+    protected <T extends BaseEntity> void get(String route, ResponseType responseType, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.GET, route, null, null, responseType, modelClass, callback);
     }
 
-    protected <T> void post(String route, Map<String, Object> body, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("POST", route, body, null, ResponseType.SINGLE, modelClass, callback);
+    protected <T extends BaseEntity> void post(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.POST, route, body, null, ResponseType.SINGLE, modelClass, callback);
     }
 
-    protected <T> void post(String route, Map<String, Object> body, File file, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("POST", route, body, file, ResponseType.SINGLE, modelClass, callback);
+    protected <T extends BaseEntity> void post(String route, Map<String, Object> body, File file, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.POST, route, body, file, ResponseType.SINGLE, modelClass, callback);
     }
 
-    protected <T> void put(String route, Map<String, Object> body, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("PUT", route, body, null, ResponseType.SINGLE, modelClass, callback);
+    protected <T extends BaseEntity> void put(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.PUT, route, body, null, ResponseType.SINGLE, modelClass, callback);
     }
 
-    protected <T> void put(String route, Map<String, Object> body, File file, Class<?> modelClass, Consumer<Object> callback) {
-        makeApiRequest("PUT", route, body, file, ResponseType.SINGLE, modelClass, callback);
+    protected <T extends BaseEntity> void put(String route, Map<String, Object> body, File file, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.PUT, route, body, file, ResponseType.SINGLE, modelClass, callback);
     }
 
-    protected <T> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest("DELETE", route, null, null, ResponseType.SINGLE, modelClass, callback);
+    protected <T extends BaseEntity> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.DELETE, route, null, null, ResponseType.SINGLE, modelClass, callback);
     }
 
     interface ApiService {
@@ -271,7 +285,7 @@ public abstract class BaseService {
         Call<Object> putWithFile(@Url String url, @Header("Authorization") String token, @Part MultipartBody.Part file, @PartMap Map<String, RequestBody> partMap);
     }
 
-    protected enum ResponseType {
+    public enum ResponseType {
         SINGLE,
         LIST
     }
