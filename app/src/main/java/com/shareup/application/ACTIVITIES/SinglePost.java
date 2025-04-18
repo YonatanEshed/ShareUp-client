@@ -93,10 +93,8 @@ public class SinglePost extends BaseActivity {
 
             if (isLiked) {
                 likeViewModel.unlikePost(postId);
-                setLikeCount(likesCount - 1);
             } else {
                 likeViewModel.likePost(postId);
-                setLikeCount(likesCount + 1);
             }
             toggleLike();
         });
@@ -161,8 +159,8 @@ public class SinglePost extends BaseActivity {
             userId = post.getUser().getId();
         });
 
-        likeViewModel.getSuccess().observe(this, success -> {
-            if (success == null || !success) {
+        likeViewModel.getActionData().observe(this, success -> {
+            if (!success) {
                 // toggle like back to previous state
                 toggleLike();
             }
@@ -180,9 +178,11 @@ public class SinglePost extends BaseActivity {
         if (isLiked) {
             setLikeOff();
             isLiked = false;
+            setLikeCount(likesCount - 1);
         } else {
             setLikeOn();
             isLiked = true;
+            setLikeCount(likesCount + 1);
         }
     }
 

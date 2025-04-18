@@ -2,6 +2,7 @@ package com.shareup.viewmodel;
 
 import android.app.Application;
 
+import com.shareup.model.ApiMethod;
 import com.shareup.model.Comment;
 import com.shareup.service.PostService;
 import com.shareup.viewmodel.BASE.BaseViewModel;
@@ -21,10 +22,10 @@ public class CommentViewModel extends BaseViewModel<Comment> {
     public void addComment(String postId, String content) {
         Comment comment = new Comment();
         comment.setContent(content);
-        executeApiCall(callback -> postService.addComment(postId, comment.toMap(), callback::onResult));
+        executeApiCall(ApiMethod.POST, callback -> postService.addComment(postId, comment.toMap(), callback::onResult));
     }
 
     public void deleteComment(String postId, String commentId) {
-        executeApiCall(callback -> postService.deleteComment(postId, commentId, callback::onResult));
+        executeApiCall(ApiMethod.DELETE, callback -> postService.deleteComment(postId, commentId, callback::onResult));
     }
 }

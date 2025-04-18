@@ -1,8 +1,9 @@
-package com.shareup.model.BASE;
+package com.shareup.model;
 
 public enum ApiMethod {
     GET,
     POST,
     PUT,
-    DELETE
+    DELETE,
+    ACTION
 }

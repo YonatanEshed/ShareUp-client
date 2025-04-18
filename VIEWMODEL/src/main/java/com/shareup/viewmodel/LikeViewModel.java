@@ -2,10 +2,11 @@ package com.shareup.viewmodel;
 
 import android.app.Application;
 
+import com.shareup.model.ApiMethod;
 import com.shareup.service.PostService;
 import com.shareup.viewmodel.BASE.BaseViewModel;
 
-public class LikeViewModel extends BaseViewModel<Void> {
+public class LikeViewModel extends BaseViewModel<Boolean> {
     private final PostService postService;
 
     public LikeViewModel(Application application) {
@@ -14,10 +15,10 @@ public class LikeViewModel extends BaseViewModel<Void> {
     }
 
     public void likePost(String postId) {
-        executeApiCall(callback -> postService.likePost(postId, callback::onResult));
+        executeApiCall(ApiMethod.POST, callback -> postService.likePost(postId, callback::onResult));
     }
 
     public void unlikePost(String postId) {
-        executeApiCall(callback -> postService.unlikePost(postId, callback::onResult));
+        executeApiCall(ApiMethod.DELETE, callback -> postService.unlikePost(postId, callback::onResult));
     }
 }

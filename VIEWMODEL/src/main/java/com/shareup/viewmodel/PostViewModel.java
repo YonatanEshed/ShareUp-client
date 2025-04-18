@@ -2,6 +2,7 @@ package com.shareup.viewmodel;
 
 import android.app.Application;
 
+import com.shareup.model.ApiMethod;
 import com.shareup.model.Post;
 import com.shareup.service.PostService;
 import com.shareup.viewmodel.BASE.BaseViewModel;
@@ -15,7 +16,7 @@ public class PostViewModel extends BaseViewModel<Post> {
     }
 
     public void getPost(String postId) {
-        executeApiCall(callback -> postService.getPost(postId, callback::onResult));
+        executeApiCall(ApiMethod.GET, callback -> postService.getPost(postId, callback::onResult));
     }
 
     public void getUserPosts(String userId) {

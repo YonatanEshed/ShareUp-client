@@ -41,7 +41,10 @@ public class Comments extends BaseActivity {
 
     private String postId;
 
+    private boolean isLoading = false;
+
     private Comment DeletedComment;
+    private int DeletedCommentPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,8 +109,22 @@ public class Comments extends BaseActivity {
 
                     ImageButton ibDeleteComment = holder.getView("ibDeleteComment");
                     ibDeleteComment.setOnClickListener(view -> {
+                        // prevent multiple delete requests if the delete request is already in progress
+                        if (isLoading) {
+                            Toast.makeText(getApplicationContext(), "Please wait...", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
                         commentViewModel.deleteComment(postId, item.getId());
+
+                        // Store the deleted comment and its position
                         DeletedComment = item;
+                        DeletedCommentPosition = position;
+
+                        // Remove the comment from the adapter
+                        List<Comment> commentsList = commentAdapter.getItems();
+                        commentsList.remove(DeletedComment);
+                        commentAdapter.setItems(commentsList);
                     });
 
                     if (item.getUser().getId().equals(getUserId())) {
@@ -136,26 +153,34 @@ public class Comments extends BaseActivity {
     protected void setViewModel() {
         commentViewModel = new CommentViewModel(getApplication());
 
-        commentViewModel.getData().observe(this, comment -> {
+        commentViewModel.getDataList().observe(this, comments -> {
+            commentAdapter.setItems(comments);
+        });
+
+        commentViewModel.getPostData().observe(this, comment -> {
             if (comment != null) {
-                switch (comment.getActionType()) {
-                    case POST:
-                        List<Comment> comments = commentAdapter.getItems();
-                        comments.add(comment);
-                        commentAdapter.setItems(comments);
-                        break;
-                    case DELETE:
-                        List<Comment> commentsList = commentAdapter.getItems();
-                        commentsList.remove(DeletedComment);
-                        commentAdapter.setItems(commentsList);
-                        break;
-                }
+                List<Comment> comments = commentAdapter.getItems();
+                comments.add(comment);
+                commentAdapter.setItems(comments);
             }
         });
 
-        commentViewModel.getDataList().observe(this, comments -> {
-            commentAdapter.setItems(comments);
+        commentViewModel.getDeleteData().observe(this, success -> {
+            if (!success) {
+                List<Comment> comments = commentAdapter.getItems();
+                comments.add(DeletedCommentPosition, DeletedComment);
+                commentAdapter.setItems(comments);
+            }
+        });
 
+        commentViewModel.getIsLoading(). observe(this, isLoading -> {
+            this.isLoading = isLoading;
+        });
+
+        commentViewModel.getMessage(). observe(this, message -> {
+            if (message != null) {
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+            }
         });
 
         commentViewModel.getComments(postId);

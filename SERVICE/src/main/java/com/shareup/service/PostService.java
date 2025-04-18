@@ -25,22 +25,22 @@ public class PostService extends BaseService {
 
     public void getUserPosts(String userId, Consumer<ApiResponse<ArrayList<Post>>> callback) {
         String route = "user/" + userId + "/";
-        get(route, ResponseType.LIST, Post.class, response -> callback.accept((ApiResponse<ArrayList<Post>>) response));
+        get(route, true, Post.class, response -> callback.accept((ApiResponse<ArrayList<Post>>) response));
     }
 
-    public void likePost(String postId, Consumer<ApiResponse<Void>> callback) {
+    public void likePost(String postId, Consumer<ApiResponse<Boolean>> callback) {
         String route = postId + "/like/";
-        post(route, null, EmptyResponse.class, response -> callback.accept((ApiResponse<Void>) response));
+        post(route, null, EmptyResponse.class, response -> callback.accept((ApiResponse<Boolean>) response));
     }
 
-    public void unlikePost(String postId, Consumer<ApiResponse<Void>> callback) {
+    public void unlikePost(String postId, Consumer<ApiResponse<Boolean>> callback) {
         String route = postId + "/like/";
-        delete(route, EmptyResponse.class, response -> callback.accept((ApiResponse<Void>) response));
+        delete(route, EmptyResponse.class, response -> callback.accept((ApiResponse<Boolean>) response));
     }
 
     public void getComments(String postId, Consumer<ApiResponse<ArrayList<Comment>>> callback) {
         String route = postId + "/comment/";
-        get(route, ResponseType.LIST, Comment.class, response -> callback.accept((ApiResponse<ArrayList<Comment>>) response));
+        get(route, true, Comment.class, response -> callback.accept((ApiResponse<ArrayList<Comment>>) response));
     }
 
     public void addComment(String postId, Map<String, Object> commentData, Consumer<ApiResponse<Comment>> callback) {

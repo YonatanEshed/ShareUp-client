@@ -6,7 +6,6 @@ import java.io.Serializable;
 
 public abstract class BaseEntity implements Serializable {
     protected String id;
-    protected ApiMethod actionType;
 
     public BaseEntity() {
         id = "";
@@ -18,14 +17,6 @@ public abstract class BaseEntity implements Serializable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public ApiMethod getActionType() {
-        return actionType;
-    }
-
-    public void setActionType(ApiMethod actionType) {
-        this.actionType = actionType;
     }
 
     @Override

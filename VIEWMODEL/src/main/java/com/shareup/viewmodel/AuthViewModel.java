@@ -2,6 +2,7 @@ package com.shareup.viewmodel;
 
 import android.app.Application;
 
+import com.shareup.model.ApiMethod;
 import com.shareup.model.ApiResponse;
 import com.shareup.model.AuthResponse;
 import com.shareup.service.AuthService;
@@ -16,11 +17,11 @@ public class AuthViewModel extends BaseViewModel<AuthResponse> {
     }
 
     public void register(String email, String username, String password) {
-        executeApiCall(callback -> authService.register(email, username, password, callback::onResult));
+        executeApiCall(ApiMethod.POST, callback -> authService.register(email, username, password, callback::onResult));
     }
 
     public void login(String email, String password) {
-        executeApiCall(callback -> authService.login(email, password, callback::onResult));
+        executeApiCall(ApiMethod.POST, callback -> authService.login(email, password, callback::onResult));
     }
 
     public void logout() {

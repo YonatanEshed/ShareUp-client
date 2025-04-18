@@ -87,7 +87,7 @@ public class Register extends BaseActivity {
     protected void setViewModel() {
         authViewModel = new AuthViewModel(getApplication());
 
-        authViewModel.getData().observe(this, authData -> {
+        authViewModel.getPostData().observe(this, authData -> {
             if (authData != null) {
                 Log.d("AuthData", authData.toString());
 

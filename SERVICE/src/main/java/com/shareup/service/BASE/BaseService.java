@@ -5,10 +5,8 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.shareup.model.ApiMethod;
 import com.shareup.model.ApiResponse;
-import com.shareup.model.BASE.ApiMethod;
-import com.shareup.model.BASE.BaseEntity;
-import com.shareup.model.EmptyResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,10 +103,11 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    protected <T extends BaseEntity> void makeApiRequest(ApiMethod method, String route, Map<String, Object> body, File file, ResponseType responseType, Class<T> dataClass, Consumer<Object> callback) {
+    protected <T> void makeApiRequest(ApiMethod method, String route, Map<String, Object> body, File file, boolean isListReponse, Class<T> dataClass, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
 
+        /* File Upload Body Handling */
         MultipartBody.Builder multipartBuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
         MultipartBody multipartBody = null;
 
@@ -133,6 +132,7 @@ public abstract class BaseService {
             body = new HashMap<>();
         }
 
+        /* Register Api Call */
         switch (method) {
             case GET:
                 call = apiService.get(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
@@ -165,27 +165,7 @@ public abstract class BaseService {
                     String json = gson.toJson(response.body());
                     Log.d("BaseService", "Response JSON: " + json);
 
-                    if (responseType == ResponseType.SINGLE) {
-                        Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
-                        Log.d("BaseService", "Response Type: " + responseType);
-                        ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
-
-                        apiResponse.setStatusCode(response.code());
-                        apiResponse.setSuccess(true);
-
-                        if (apiResponse.getData() == null) {
-                            try {
-                                T newInstance = dataClass.getDeclaredConstructor().newInstance();
-                                apiResponse.setData(newInstance);
-                            } catch (Exception e) {
-                                Log.e("BaseService", "Error creating new instance of " + dataClass.getSimpleName(), e);
-                            }
-                        }
-                        apiResponse.getData().setActionType(method);
-
-                        Log.i("BaseService", apiResponse.toString());
-                        callback.accept(apiResponse);
-                    } else if (responseType == ResponseType.LIST) {
+                    if (isListReponse) {
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, TypeToken.getParameterized(ArrayList.class, dataClass).getType()).getType();
                         ApiResponse<ArrayList<T>> apiResponse = gson.fromJson(json, responseType);
 
@@ -195,8 +175,16 @@ public abstract class BaseService {
                         Log.i("BaseService", apiResponse.toString());
                         callback.accept(apiResponse);
                     } else {
-                        Log.e("BaseService", "Unsupported response type: " + responseType);
-                        callback.accept(null);
+
+                        Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
+                        Log.d("BaseService", "Response Type: " + responseType);
+                        ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
+
+                        apiResponse.setStatusCode(response.code());
+                        apiResponse.setSuccess(true);
+
+                        Log.i("BaseService", apiResponse.toString());
+                        callback.accept(apiResponse);
                     }
                 } else if(response.errorBody() != null) {
                     try {
@@ -235,32 +223,32 @@ public abstract class BaseService {
         });
     }
 
-    protected <T extends BaseEntity> void get(String route, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest(ApiMethod.GET, route, null, null, ResponseType.SINGLE, modelClass, callback);
+    protected <T> void get(String route, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.GET, route, null, null, false, modelClass, callback);
     }
 
-    protected <T extends BaseEntity> void get(String route, ResponseType responseType, Class<T> modelClass, Consumer<Object> callback) {
+    protected <T> void get(String route, boolean responseType, Class<T> modelClass, Consumer<Object> callback) {
         makeApiRequest(ApiMethod.GET, route, null, null, responseType, modelClass, callback);
     }
 
-    protected <T extends BaseEntity> void post(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest(ApiMethod.POST, route, body, null, ResponseType.SINGLE, modelClass, callback);
+    protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.POST, route, body, null, false, modelClass, callback);
     }
 
-    protected <T extends BaseEntity> void post(String route, Map<String, Object> body, File file, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest(ApiMethod.POST, route, body, file, ResponseType.SINGLE, modelClass, callback);
+    protected <T> void post(String route, Map<String, Object> body, File file, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.POST, route, body, file, false, modelClass, callback);
     }
 
-    protected <T extends BaseEntity> void put(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest(ApiMethod.PUT, route, body, null, ResponseType.SINGLE, modelClass, callback);
+    protected <T> void put(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.PUT, route, body, null, false, modelClass, callback);
     }
 
-    protected <T extends BaseEntity> void put(String route, Map<String, Object> body, File file, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest(ApiMethod.PUT, route, body, file, ResponseType.SINGLE, modelClass, callback);
+    protected <T> void put(String route, Map<String, Object> body, File file, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.PUT, route, body, file, false, modelClass, callback);
     }
 
-    protected <T extends BaseEntity> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest(ApiMethod.DELETE, route, null, null, ResponseType.SINGLE, modelClass, callback);
+    protected <T> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.DELETE, route, null, null, false, modelClass, callback);
     }
 
     interface ApiService {
@@ -283,10 +271,5 @@ public abstract class BaseService {
         @Multipart
         @PUT
         Call<Object> putWithFile(@Url String url, @Header("Authorization") String token, @Part MultipartBody.Part file, @PartMap Map<String, RequestBody> partMap);
-    }
-
-    public enum ResponseType {
-        SINGLE,
-        LIST
     }
 }

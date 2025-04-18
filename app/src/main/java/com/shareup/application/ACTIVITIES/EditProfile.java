@@ -19,10 +19,12 @@ import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
 import com.shareup.helper.FileUtil;
+import com.shareup.model.Comment;
 import com.shareup.viewmodel.ProfileViewModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class EditProfile extends BaseActivity {
     ProfileViewModel profileViewModel;
@@ -102,9 +104,14 @@ public class EditProfile extends BaseActivity {
                 etEditProfileUsername.setText(profile.getUsername());
                 etEditProfileBio.setText(profile.getBio());
 
-                if (profile.getProfilePicture() != null) {
+                if (profile.getProfilePicture() != null)
                     Glide.with(getApplicationContext()).load(profile.getProfilePicture()).into(ibEditProfilePicture);
-                }
+            }
+        });
+
+        profileViewModel.getUpdateData().observe(this, profile -> {
+            if (profile != null) {
+                finish();
             }
         });
 
