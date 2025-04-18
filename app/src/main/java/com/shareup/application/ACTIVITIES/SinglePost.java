@@ -103,11 +103,18 @@ public class SinglePost extends BaseActivity {
 
         ibPostComment.setOnClickListener(v -> {
             // Open CommentActivity
-
+            Intent intent = new Intent(SinglePost.this, Comments.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("postId", postId);
+            startActivity(intent);
         });
 
         btnViewComments.setOnClickListener(v -> {
             // Open CommentActivity
+            Intent intent = new Intent(SinglePost.this, Comments.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("postId", postId);
+            startActivity(intent);
         });
 
         llProfileContainer.setOnClickListener(v -> {
