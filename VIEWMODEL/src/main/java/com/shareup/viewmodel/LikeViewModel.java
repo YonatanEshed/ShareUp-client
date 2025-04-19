@@ -15,10 +15,10 @@ public class LikeViewModel extends BaseViewModel<Boolean> {
     }
 
     public void likePost(String postId) {
-        executeApiCall(ApiMethod.POST, callback -> postService.likePost(postId, callback::onResult));
+        executeApiCall(ApiMethod.ACTION, callback -> postService.likePost(postId, callback::onResult));
     }
 
     public void unlikePost(String postId) {
-        executeApiCall(ApiMethod.DELETE, callback -> postService.unlikePost(postId, callback::onResult));
+        executeApiCall(ApiMethod.ACTION, callback -> postService.unlikePost(postId, callback::onResult));
     }
 }
