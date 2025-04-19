@@ -30,4 +30,14 @@ public class ProfileService extends BaseService {
         String route = "";
         put(route, profile.toMap(), image, Profile.class, response -> callback.accept((ApiResponse<Profile>) response));
     }
+
+    public void followUser(String userId, Consumer<ApiResponse<Boolean>> callback) {
+        String route = userId + "/follow/";
+        post(route, null, Boolean.class, response -> callback.accept((ApiResponse<Boolean>) response));
+    }
+
+    public void unfollowUser(String userId, Consumer<ApiResponse<Boolean>> callback) {
+        String route = userId + "/follow/";
+        delete(route, Boolean.class, response -> callback.accept((ApiResponse<Boolean>) response));
+    }
 }

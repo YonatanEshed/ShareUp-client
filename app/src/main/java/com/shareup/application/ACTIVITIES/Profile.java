@@ -21,7 +21,7 @@ import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.ADPTERS.PostAdapter;
 import com.shareup.application.R;
-import com.shareup.model.Post;
+import com.shareup.viewmodel.FollowViewModel;
 import com.shareup.viewmodel.PostViewModel;
 import com.shareup.viewmodel.ProfileViewModel;
 
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 public class Profile extends BaseActivity {
     ProfileViewModel profileViewModel;
     PostViewModel postViewModel;
+    FollowViewModel followViewModel;
 
     PostAdapter postsAdapter;
 
@@ -40,6 +41,9 @@ public class Profile extends BaseActivity {
     RecyclerView rvProfilePosts;
 
     String userId;
+
+    boolean isFollowed;
+    int followersCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +95,13 @@ public class Profile extends BaseActivity {
     @Override
     protected void setListeners() {
         btnProfileFollow.setOnClickListener(view -> {
-            // follow user
+            if (isFollowed)
+                followViewModel.unfollowUser(userId);
+            else
+                followViewModel.followUser(userId);
+
+
+            toggleFollow();
         });
 
         btnProfileMessage.setOnClickListener(view -> {
@@ -143,6 +153,8 @@ public class Profile extends BaseActivity {
     protected void setViewModel() {
         profileViewModel = new ProfileViewModel(getApplication());
         postViewModel = new PostViewModel(getApplication());
+        followViewModel = new FollowViewModel(getApplication());
+
         // obsereve data
         profileViewModel.getData().observe(this, profile -> {
             if (profile == null) {
@@ -158,12 +170,21 @@ public class Profile extends BaseActivity {
                 Glide.with(getApplicationContext()).load(profile.getProfilePicture()).into(ivProfilePicture);
             }
 
-            if (profile.getId().equals(userId)) {
+            if (getUserId().equals(profile.getId())) {
                 profileButtons.setVisibility(View.GONE);
                 profileButtonsOwn.setVisibility(View.VISIBLE);
             } else {
                 profileButtons.setVisibility(View.VISIBLE);
                 profileButtonsOwn.setVisibility(View.GONE);
+            }
+
+            followersCount = profile.getFollowersCount();
+            isFollowed = profile.isFollowed();
+
+            if (isFollowed) {
+                setFollowTrue();
+            } else {
+                setFollowFalse();
             }
         });
 
@@ -187,6 +208,18 @@ public class Profile extends BaseActivity {
             postsAdapter.setItems(posts);
         });
 
+        followViewModel.getActionData().observe(this, success -> {
+            if (!success) {
+                toggleFollow();
+            }
+        });
+
+        followViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         profileViewModel.getProfile(userId);
         postViewModel.getUserPosts(userId);
     }
@@ -195,5 +228,32 @@ public class Profile extends BaseActivity {
     protected void onResume() {
         super.onResume();
         profileViewModel.getProfile(userId);
+    }
+
+
+    private void toggleFollow() {
+        if (isFollowed) {
+            setFollowFalse();
+            isFollowed = false;
+            followersCount -= 1;
+            tvFollowersCount.setText(String.valueOf(followersCount));
+        } else {
+            setFollowTrue();
+            isFollowed = true;
+            followersCount += 1;
+            tvFollowersCount.setText(String.valueOf(followersCount));
+        }
+    }
+
+    private void setFollowFalse() {
+        btnProfileFollow.setBackgroundResource(R.drawable.primary_button_bg);
+        btnProfileFollow.setTextColor(getResources().getColor(R.color.white));
+        btnProfileFollow.setText("Follow");
+    }
+
+    private void setFollowTrue() {
+        btnProfileFollow.setBackgroundResource(R.drawable.secondary_button_bg);
+        btnProfileFollow.setTextColor(getResources().getColor(R.color.gray3));
+        btnProfileFollow.setText("Following");
     }
 }

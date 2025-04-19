@@ -13,6 +13,7 @@ public class Profile extends BaseEntity {
     private String profilePicture;
     private int followingsCount;
     private int followersCount;
+    private boolean isFollowed;
 
     public Profile() {
         super();
@@ -52,6 +53,10 @@ public class Profile extends BaseEntity {
 
     public int getFollowersCount() {
         return followersCount;
+    }
+
+    public boolean isFollowed() {
+        return isFollowed;
     }
 
     public Map<String, Object> toMap() {
