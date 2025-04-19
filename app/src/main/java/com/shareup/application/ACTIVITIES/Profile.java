@@ -7,26 +7,42 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
+import com.shareup.application.ADPTERS.PostAdapter;
 import com.shareup.application.R;
+import com.shareup.viewmodel.FollowViewModel;
+import com.shareup.viewmodel.PostViewModel;
 import com.shareup.viewmodel.ProfileViewModel;
+
+import java.util.ArrayList;
 
 public class Profile extends BaseActivity {
     ProfileViewModel profileViewModel;
+    PostViewModel postViewModel;
+    FollowViewModel followViewModel;
+
+    PostAdapter postsAdapter;
 
     TextView tvPostsCount, tvFollowersCount, tvFollowingCount, tvProfileUsername, tvBio;
     Button btnProfileFollow, btnProfileMessage, btnEditProfile, btnProfileLogout;
     ImageView ivProfilePicture;
     LinearLayout profileButtons, profileButtonsOwn;
+    RecyclerView rvProfilePosts;
 
     String userId;
 
+    boolean isFollowed;
+    int followersCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +58,7 @@ public class Profile extends BaseActivity {
 
         initializeViews();
         setViewModel();
+        setAdapters();
         setListeners();
     }
 
@@ -67,6 +84,9 @@ public class Profile extends BaseActivity {
         profileButtons = findViewById(R.id.profileButtons);
         profileButtonsOwn = findViewById(R.id.profileButtonsOwn);
 
+        // RecyclerView
+        rvProfilePosts = findViewById(R.id.rvProfilePosts);
+
         // get user id
         userId = getIntent().getStringExtra("userId");
     }
@@ -74,7 +94,8 @@ public class Profile extends BaseActivity {
     @Override
     protected void setListeners() {
         btnProfileFollow.setOnClickListener(view -> {
-            // follow user
+            followViewModel.followUser(userId);
+            toggleFollow();
         });
 
         btnProfileMessage.setOnClickListener(view -> {
@@ -91,27 +112,79 @@ public class Profile extends BaseActivity {
             logout();
         });
 
+        postsAdapter.setOnItemClickListener((item, position) -> {
+            // Open SinglePost activity
+            Intent intent = new Intent(Profile.this, SinglePost.class);
+            intent.putExtra("postId", item.getId());
+            startActivity(intent);
+        });
+    }
 
+    protected void setAdapters() {
+        postsAdapter = new PostAdapter(new ArrayList<>(), R.layout.post_overview,
+                holder -> {
+                    // Initialize ViewHolder
+                    holder.putView("ivPostPicture", holder.itemView.findViewById(R.id.ivPostOverview));
+                },
+                (holder, item, position) -> {
+                    // Bind ViewHolder
+                    ImageView ivPostPicture = holder.getView("ivPostPicture");
+                    Glide.with(getApplicationContext()).load(item.getMediaURL()).into(ivPostPicture);
+                });
+
+        postsAdapter.setOnItemClickListener((item, position) -> {
+            // Open SinglePost activity
+            Intent intent = new Intent(Profile.this, SinglePost.class);
+            intent.putExtra("postId", item.getId());
+            startActivity(intent);
+        });
+
+        rvProfilePosts.setLayoutManager(new GridLayoutManager(this, 3));
+        rvProfilePosts.setAdapter(postsAdapter);
     }
 
     @Override
     protected void setViewModel() {
         profileViewModel = new ProfileViewModel(getApplication());
+        postViewModel = new PostViewModel(getApplication());
+        followViewModel = new FollowViewModel(getApplication());
+
         // obsereve data
         profileViewModel.getData().observe(this, profile -> {
+            if (profile == null) {
+                return;
+            }
 
             tvProfileUsername.setText(profile.getUsername());
             tvBio.setText(profile.getBio());
             tvFollowingCount.setText(String.valueOf(profile.getFollowingCount()));
             tvFollowersCount.setText(String.valueOf(profile.getFollowersCount()));
-//            tvPostsCount.setText(String.valueOf(profile.getPostsCount()));
 
-            if (profile.getId().equals(userId)) {
+            if (profile.getProfilePicture() != null) {
+                Glide.with(getApplicationContext()).load(profile.getProfilePicture()).into(ivProfilePicture);
+            }
+
+            if (getUserId().equals(profile.getId())) {
                 profileButtons.setVisibility(View.GONE);
                 profileButtonsOwn.setVisibility(View.VISIBLE);
             } else {
                 profileButtons.setVisibility(View.VISIBLE);
                 profileButtonsOwn.setVisibility(View.GONE);
+            }
+
+            followersCount = profile.getFollowersCount();
+            isFollowed = profile.isFollowed();
+
+            if (isFollowed) {
+                setFollowOn();
+            } else {
+                setFollowOff();
+            }
+        });
+
+        profileViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -123,14 +196,58 @@ public class Profile extends BaseActivity {
             }
         });
 
+        postViewModel.getDataList().observe(this, posts -> {
+            tvPostsCount.setText(String.valueOf(posts.size()));
+
+            postsAdapter.setItems(posts);
+        });
+
+        followViewModel.getActionData().observe(this, success -> {
+            if (!success) {
+                toggleFollow();
+            }
+        });
+
+        followViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         profileViewModel.getProfile(userId);
+        postViewModel.getUserPosts(userId);
     }
-
-
 
     @Override
     protected void onResume() {
         super.onResume();
         profileViewModel.getProfile(userId);
+    }
+
+
+    private void toggleFollow() {
+        if (isFollowed) {
+            setFollowOff();
+            isFollowed = false;
+            followersCount -= 1;
+            tvFollowersCount.setText(String.valueOf(followersCount));
+        } else {
+            setFollowOn();
+            isFollowed = true;
+            followersCount += 1;
+            tvFollowersCount.setText(String.valueOf(followersCount));
+        }
+    }
+
+    private void setFollowOn() {
+        btnProfileFollow.setBackgroundResource(R.drawable.primary_button_bg);
+        btnProfileFollow.setTextColor(getResources().getColor(R.color.white));
+        btnProfileFollow.setText("Follow");
+    }
+
+    private void setFollowOff() {
+        btnProfileFollow.setBackgroundResource(R.drawable.secondary_button_bg);
+        btnProfileFollow.setTextColor(getResources().getColor(R.color.gray3));
+        btnProfileFollow.setText("Following");
     }
 }

@@ -2,23 +2,26 @@ package com.shareup.service.BASE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.service.autofill.SaveRequest;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.shareup.model.BASE.BaseEntity;
-import com.shareup.model.BASE.BaseResponse;
-import com.shareup.model.MessageResponse;
+import com.shareup.model.ApiMethod;
+import com.shareup.model.ApiResponse;
 
+import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -27,15 +30,17 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.DELETE;
 import retrofit2.http.Header;
-import retrofit2.http.Path;
+import retrofit2.http.Part;
+import retrofit2.http.PartMap;
 import retrofit2.http.Url;
 
 public abstract class BaseService {
-    private static final String BASE_URL = "https://us-central1-shareup-21b47.cloudfunctions.net/api/";
+    private static final String BASE_URL = "https://europe-west1-shareup-21b47.cloudfunctions.net/api/";
     protected String SERVICE_ROUTE = "";
 
     private static Retrofit retrofit;
@@ -98,21 +103,53 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    protected <T> void makeApiRequest(String method, String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
+    protected <T> void makeApiRequest(ApiMethod method, String route, Map<String, Object> body, File file, boolean isListReponse, Class<T> dataClass, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
 
+        /* File Upload Body Handling */
+        MultipartBody.Builder multipartBuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        MultipartBody multipartBody = null;
+
+        MultipartBody.Part filePart = null;
+        Map<String, RequestBody> partMap = new HashMap<>();
+
+        // Add file to the multipart request
+        if (file != null) {
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
+            filePart = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+        }
+
+        // Add dynamic body parameters to the part map
+        if (body != null) {
+            for (Map.Entry<String, Object> entry : body.entrySet()) {
+                partMap.put(entry.getKey(), RequestBody.create(MediaType.parse("text/plain"), entry.getValue().toString()));
+            }
+        }
+
+        // initialize empty body if null
+        if (body == null) {
+            body = new HashMap<>();
+        }
+
+        /* Register Api Call */
         switch (method) {
-            case "GET":
+            case GET:
                 call = apiService.get(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
                 break;
-            case "POST":
-                call = apiService.post(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
+            case POST:
+                if (file != null)
+                    call = apiService.postWithFile(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), filePart, partMap);
+                else
+                    call = apiService.post(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
                 break;
-            case "PUT":
-                call = apiService.put(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
+            case PUT:
+                if (file != null)
+                    call = apiService.putWithFile(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), filePart, partMap);
+                else
+                    call = apiService.put(BASE_URL + SERVICE_ROUTE + route, getJwtToken(), body);
                 break;
-            case "DELETE":
+            case DELETE:
                 call = apiService.delete(BASE_URL + SERVICE_ROUTE + route, getJwtToken());
                 break;
             default:
@@ -126,18 +163,28 @@ public abstract class BaseService {
             public void onResponse(Call<Object> call, Response<Object> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String json = gson.toJson(response.body());
-                    switch (type) {
-                        case SINGLE:
-                            T model = gson.fromJson(json, modelClass);
-                            Log.i("BaseService", model.toString());
-                            callback.accept(model);
-                            break;
-                        case LIST:
-                            Type listType = TypeToken.getParameterized(ArrayList.class, modelClass).getType();
-                            ArrayList<T> modelList = gson.fromJson(json, listType);
-                            Log.i("BaseService", modelList.toString());
-                            callback.accept(modelList);
-                            break;
+                    Log.d("BaseService", "Response JSON: " + json);
+
+                    if (isListReponse) {
+                        Type responseType = TypeToken.getParameterized(ApiResponse.class, TypeToken.getParameterized(ArrayList.class, dataClass).getType()).getType();
+                        ApiResponse<ArrayList<T>> apiResponse = gson.fromJson(json, responseType);
+
+                        apiResponse.setStatusCode(response.code());
+                        apiResponse.setSuccess(true);
+
+                        Log.i("BaseService", apiResponse.toString());
+                        callback.accept(apiResponse);
+                    } else {
+
+                        Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
+                        Log.d("BaseService", "Response Type: " + responseType);
+                        ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
+
+                        apiResponse.setStatusCode(response.code());
+                        apiResponse.setSuccess(true);
+
+                        Log.i("BaseService", apiResponse.toString());
+                        callback.accept(apiResponse);
                     }
                 } else if(response.errorBody() != null) {
                     try {
@@ -146,16 +193,18 @@ public abstract class BaseService {
                             json = gson.fromJson(json, String.class);
                         }
 
-                        Log.d("BaseService", json);
-                        MessageResponse message = gson.fromJson(json, MessageResponse.class);
+                        Log.d("BaseService", "Response JSON: " + json);
 
-                        BaseResponse model = (BaseEntity) modelClass.getConstructor().newInstance();
-                        model.setServerMessage(message.getMessage());
-                        model.setCode(response.code());
+                        Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
+                        ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
 
-                        callback.accept(model);
-                    } catch (IOException | InvocationTargetException | NoSuchMethodException |
-                             InstantiationException | IllegalAccessException e) {
+                        apiResponse.setStatusCode(response.code());
+                        apiResponse.setSuccess(false);
+
+                        Log.i("BaseService", apiResponse.toString());
+                        callback.accept(apiResponse);
+
+                    } catch (IOException e) {
                         Log.e("BaseService", "API Error: " + response.errorBody(), e);
                         callback.accept(null);
                     }
@@ -174,20 +223,32 @@ public abstract class BaseService {
         });
     }
 
-    protected <T> void get(String route, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
-        makeApiRequest("GET", route, null, modelClass, type, callback);
+    protected <T> void get(String route, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.GET, route, null, null, false, modelClass, callback);
     }
 
-    protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
-        makeApiRequest("POST", route, body, modelClass, type, callback);
+    protected <T> void get(String route, boolean responseType, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.GET, route, null, null, responseType, modelClass, callback);
     }
 
-    protected <T> void put(String route, Map<String, Object> body, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
-        makeApiRequest("PUT", route, body, modelClass, type, callback);
+    protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.POST, route, body, null, false, modelClass, callback);
     }
 
-    protected <T> void delete(String route, Class<T> modelClass, ResponseType type, Consumer<Object> callback) {
-        makeApiRequest("DELETE", route, null, modelClass, type, callback);
+    protected <T> void post(String route, Map<String, Object> body, File file, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.POST, route, body, file, false, modelClass, callback);
+    }
+
+    protected <T> void put(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.PUT, route, body, null, false, modelClass, callback);
+    }
+
+    protected <T> void put(String route, Map<String, Object> body, File file, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.PUT, route, body, file, false, modelClass, callback);
+    }
+
+    protected <T> void delete(String route, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.DELETE, route, null, null, false, modelClass, callback);
     }
 
     interface ApiService {
@@ -202,11 +263,13 @@ public abstract class BaseService {
 
         @DELETE
         Call<Object> delete(@Url String url, @Header("Authorization") String token);
-    }
 
-    protected enum ResponseType {
-        SINGLE,
-        LIST,
-        MESSAGE
+        @Multipart
+        @POST
+        Call<Object> postWithFile(@Url String url, @Header("Authorization") String token, @Part MultipartBody.Part file, @PartMap Map<String, RequestBody> partMap);
+
+        @Multipart
+        @PUT
+        Call<Object> putWithFile(@Url String url, @Header("Authorization") String token, @Part MultipartBody.Part file, @PartMap Map<String, RequestBody> partMap);
     }
 }

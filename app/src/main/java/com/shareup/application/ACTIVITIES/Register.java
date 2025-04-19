@@ -87,28 +87,30 @@ public class Register extends BaseActivity {
     protected void setViewModel() {
         authViewModel = new AuthViewModel(getApplication());
 
-        authViewModel.getData().observe(this, authResponse -> {
-            if (authResponse != null) {
-                if (authResponse.getServerMessage() != null && authResponse.getToken() == null) {
-                    tvRegisterError.setText(authResponse.getServerMessage());
-                    return;
-                }
-                authViewModel.saveLogin(authResponse.getToken(), authResponse.getUserId());
+        authViewModel.getPostData().observe(this, authData -> {
+            if (authData != null) {
+                Log.d("AuthData", authData.toString());
 
-                Intent intent = new Intent(Register.this, Login.class);
+                authViewModel.saveLogin(authData.getToken(), authData.getUserId());
+
+                Intent intent = new Intent(Register.this, Profile.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.putExtra("userId", authData.getUserId());
                 startActivity(intent);
-
-            } else {
-                tvRegisterError.setText("An Error Occurred. please try again"); // TODO: Show message returned by the API
             }
         });
-
 
         authViewModel.getIsLoading().observe(this, isLoading -> {
             if (isLoading) {
                 showLoading();
             } else {
                 hideLoading();
+            }
+        });
+
+        authViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                tvRegisterError.setText(message);
             }
         });
     }

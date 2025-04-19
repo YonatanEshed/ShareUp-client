@@ -1,6 +1,10 @@
 package com.shareup.application.ACTIVITIES;
 
+import android.content.Intent;
+import android.media.MediaParser;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -11,9 +15,16 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
+import com.shareup.helper.FileUtil;
+import com.shareup.model.Comment;
 import com.shareup.viewmodel.ProfileViewModel;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class EditProfile extends BaseActivity {
     ProfileViewModel profileViewModel;
@@ -22,6 +33,8 @@ public class EditProfile extends BaseActivity {
     EditText etEditProfileUsername, etEditProfileBio;
     ImageButton ibEditProfilePicture;
     TextView tvEditProfileError;
+
+    Uri newProfilePictureUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +61,10 @@ public class EditProfile extends BaseActivity {
         etEditProfileBio = findViewById(R.id.etEditProfileBio);
 
         // ImageButtons
-//        ibEditProfilePicture = findViewById(R.id.ibEditProfilePicture);
+        ibEditProfilePicture = findViewById(R.id.ibEditProfilePicture);
 
         // TextViews
         tvEditProfileError = findViewById(R.id.tvEditProfileError);
-
 
         setViewModel();
         setListeners();
@@ -64,7 +76,22 @@ public class EditProfile extends BaseActivity {
             String username = etEditProfileUsername.getText().toString();
             String bio = etEditProfileBio.getText().toString();
 
-            profileViewModel.updateProfile(username, bio);
+            if (newProfilePictureUri != null) {
+                try {
+                    File image = FileUtil.convertUriToPngFile(this, newProfilePictureUri);
+                    profileViewModel.updateProfile(username, bio, image);
+                } catch (IOException e) {
+                    tvEditProfileError.setText("Error getting image");
+                }
+            } else {
+                profileViewModel.updateProfile(username, bio);
+            }
+        });
+
+        ibEditProfilePicture.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, 1);
         });
     }
 
@@ -74,16 +101,23 @@ public class EditProfile extends BaseActivity {
 
         profileViewModel.getData().observe(this, profile -> {
             if (profile != null) {
-                if (profile.getServerMessage() != null) {
-                    tvEditProfileError.setText(profile.getServerMessage());
-                    return;
-                }
-
                 etEditProfileUsername.setText(profile.getUsername());
                 etEditProfileBio.setText(profile.getBio());
 
-            } else {
-                tvEditProfileError.setText("An error occurred");
+                if (profile.getProfilePicture() != null)
+                    Glide.with(getApplicationContext()).load(profile.getProfilePicture()).into(ibEditProfilePicture);
+            }
+        });
+
+        profileViewModel.getUpdateData().observe(this, profile -> {
+            if (profile != null) {
+                finish();
+            }
+        });
+
+        profileViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                tvEditProfileError.setText(message);
             }
         });
 
@@ -96,5 +130,18 @@ public class EditProfile extends BaseActivity {
         });
 
         profileViewModel.getProfile(getUserId());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+            // Handle the image selection
+            Uri selectedImageUri = data.getData();
+            if (selectedImageUri != null) {
+                ibEditProfilePicture.setImageURI(selectedImageUri);
+                newProfilePictureUri = selectedImageUri;
+            }
+        }
     }
 }

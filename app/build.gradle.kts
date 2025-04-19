@@ -40,6 +40,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.google.android.gms:play-services-maps:19.0.0")
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
     implementation(project(":VIEWMODEL"))
     implementation(project(":MODEL"))
     implementation(project(":HELPER"))
