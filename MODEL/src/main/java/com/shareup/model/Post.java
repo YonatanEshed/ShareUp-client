@@ -39,6 +39,10 @@ public class Post extends BaseEntity {
         return likesCount;
     }
 
+    public void setLikesCount(int likesCount) {
+        this.likesCount = likesCount;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -68,6 +72,7 @@ public class Post extends BaseEntity {
                 ", caption='" + caption + '\'' +
                 ", likesCount=" + likesCount +
                 ", createdAt=" + createdAt +
+                ", isLiked=" + isLiked +
                 '}';
     }
 

@@ -28,6 +28,16 @@ public class PostService extends BaseService {
         get(route, true, Post.class, response -> callback.accept((ApiResponse<ArrayList<Post>>) response));
     }
 
+    public void getPostsFeed(Consumer<ApiResponse<ArrayList<Post>>> callback) {
+        String route = "feed/";
+        get(route, true, Post.class, response -> callback.accept((ApiResponse<ArrayList<Post>>) response));
+    }
+
+    public void getPostsFollowingFeed(Consumer<ApiResponse<ArrayList<Post>>> callback) {
+        String route = "feed/following/";
+        get(route, true, Post.class, response -> callback.accept((ApiResponse<ArrayList<Post>>) response));
+    }
+
     public void likePost(String postId, Consumer<ApiResponse<Boolean>> callback) {
         String route = postId + "/like/";
         post(route, null, EmptyResponse.class, response -> callback.accept((ApiResponse<Boolean>) response));
