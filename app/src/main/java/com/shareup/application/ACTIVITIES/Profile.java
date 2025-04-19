@@ -2,7 +2,6 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -21,7 +20,7 @@ import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.ADPTERS.PostAdapter;
 import com.shareup.application.R;
-import com.shareup.model.Post;
+import com.shareup.viewmodel.FollowViewModel;
 import com.shareup.viewmodel.PostViewModel;
 import com.shareup.viewmodel.ProfileViewModel;
 
@@ -30,6 +29,7 @@ import java.util.ArrayList;
 public class Profile extends BaseActivity {
     ProfileViewModel profileViewModel;
     PostViewModel postViewModel;
+    FollowViewModel followViewModel;
 
     PostAdapter postsAdapter;
 
@@ -40,6 +40,9 @@ public class Profile extends BaseActivity {
     RecyclerView rvProfilePosts;
 
     String userId;
+
+    boolean isFollowed;
+    int followersCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +94,8 @@ public class Profile extends BaseActivity {
     @Override
     protected void setListeners() {
         btnProfileFollow.setOnClickListener(view -> {
-            // follow user
+            followViewModel.followUser(userId);
+            toggleFollow();
         });
 
         btnProfileMessage.setOnClickListener(view -> {
@@ -143,6 +147,8 @@ public class Profile extends BaseActivity {
     protected void setViewModel() {
         profileViewModel = new ProfileViewModel(getApplication());
         postViewModel = new PostViewModel(getApplication());
+        followViewModel = new FollowViewModel(getApplication());
+
         // obsereve data
         profileViewModel.getData().observe(this, profile -> {
             if (profile == null) {
@@ -158,12 +164,21 @@ public class Profile extends BaseActivity {
                 Glide.with(getApplicationContext()).load(profile.getProfilePicture()).into(ivProfilePicture);
             }
 
-            if (profile.getId().equals(userId)) {
+            if (getUserId().equals(profile.getId())) {
                 profileButtons.setVisibility(View.GONE);
                 profileButtonsOwn.setVisibility(View.VISIBLE);
             } else {
                 profileButtons.setVisibility(View.VISIBLE);
                 profileButtonsOwn.setVisibility(View.GONE);
+            }
+
+            followersCount = profile.getFollowersCount();
+            isFollowed = profile.isFollowed();
+
+            if (isFollowed) {
+                setFollowOn();
+            } else {
+                setFollowOff();
             }
         });
 
@@ -187,6 +202,18 @@ public class Profile extends BaseActivity {
             postsAdapter.setItems(posts);
         });
 
+        followViewModel.getActionData().observe(this, success -> {
+            if (!success) {
+                toggleFollow();
+            }
+        });
+
+        followViewModel.getMessage().observe(this, message -> {
+            if (message != null) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         profileViewModel.getProfile(userId);
         postViewModel.getUserPosts(userId);
     }
@@ -195,5 +222,32 @@ public class Profile extends BaseActivity {
     protected void onResume() {
         super.onResume();
         profileViewModel.getProfile(userId);
+    }
+
+
+    private void toggleFollow() {
+        if (isFollowed) {
+            setFollowOff();
+            isFollowed = false;
+            followersCount -= 1;
+            tvFollowersCount.setText(String.valueOf(followersCount));
+        } else {
+            setFollowOn();
+            isFollowed = true;
+            followersCount += 1;
+            tvFollowersCount.setText(String.valueOf(followersCount));
+        }
+    }
+
+    private void setFollowOn() {
+        btnProfileFollow.setBackgroundResource(R.drawable.primary_button_bg);
+        btnProfileFollow.setTextColor(getResources().getColor(R.color.white));
+        btnProfileFollow.setText("Follow");
+    }
+
+    private void setFollowOff() {
+        btnProfileFollow.setBackgroundResource(R.drawable.secondary_button_bg);
+        btnProfileFollow.setTextColor(getResources().getColor(R.color.gray3));
+        btnProfileFollow.setText("Following");
     }
 }
