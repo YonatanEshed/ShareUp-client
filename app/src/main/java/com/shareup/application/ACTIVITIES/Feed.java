@@ -26,6 +26,9 @@ import com.shareup.viewmodel.PostViewModel;
 import java.util.ArrayList;
 
 public class Feed extends BaseActivity {
+    public static final String HOME_FEED_TAG = "home_feed";
+    public static final String SEARCH_FEED_TAG = "search_feed";
+
     PostViewModel postViewModel;
     LikeViewModel likeViewModel;
 
@@ -36,6 +39,8 @@ public class Feed extends BaseActivity {
     Post post; // to hold the post of the post that was liked or unliked(while waiting for successful response)
     TextView tvLikedPostLikesCount; // to hold the likes count of the post that was liked or unliked(while waiting for successful response)
     ImageButton ibLikedPostLike; // to hold the like button of the post that was liked or unliked(while waiting for successful response)
+
+    String feedType;
 
     boolean holdLike = false; // to hold the like state while like request is in progress
 
@@ -60,6 +65,9 @@ public class Feed extends BaseActivity {
     @Override
     protected void initializeViews() {
         rvFeedPosts = findViewById(R.id.rvFeedPosts);
+
+        feedType = getIntent().getStringExtra("feedType");
+        feedType = feedType == null ? SEARCH_FEED_TAG : feedType; // default to home feed
     }
 
     @Override
@@ -181,7 +189,15 @@ public class Feed extends BaseActivity {
             }
         });
 
-        postViewModel.getPostsFeed();
+        // Set the feed type based on the intent extra
+        if (feedType.equals(HOME_FEED_TAG)) {
+            postViewModel.getPostsFollowingFeed();
+        } else if (feedType.equals(SEARCH_FEED_TAG)) {
+            postViewModel.getPostsFeed();
+        } else {
+            // default to search feed(all posts)
+            postViewModel.getPostsFeed();
+        }
     }
 
     private void toggleLike(Post post, ImageButton ibPostLike, TextView tvPostLikesCount) {

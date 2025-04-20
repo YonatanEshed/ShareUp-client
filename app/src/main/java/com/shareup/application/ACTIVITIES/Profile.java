@@ -2,6 +2,7 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -94,7 +95,12 @@ public class Profile extends BaseActivity {
     @Override
     protected void setListeners() {
         btnProfileFollow.setOnClickListener(view -> {
-            followViewModel.followUser(userId);
+            if (isFollowed)
+                followViewModel.unfollowUser(userId);
+            else
+                followViewModel.followUser(userId);
+
+
             toggleFollow();
         });
 
@@ -176,9 +182,9 @@ public class Profile extends BaseActivity {
             isFollowed = profile.isFollowed();
 
             if (isFollowed) {
-                setFollowOn();
+                setFollowTrue();
             } else {
-                setFollowOff();
+                setFollowFalse();
             }
         });
 
@@ -227,25 +233,25 @@ public class Profile extends BaseActivity {
 
     private void toggleFollow() {
         if (isFollowed) {
-            setFollowOff();
+            setFollowFalse();
             isFollowed = false;
             followersCount -= 1;
             tvFollowersCount.setText(String.valueOf(followersCount));
         } else {
-            setFollowOn();
+            setFollowTrue();
             isFollowed = true;
             followersCount += 1;
             tvFollowersCount.setText(String.valueOf(followersCount));
         }
     }
 
-    private void setFollowOn() {
+    private void setFollowFalse() {
         btnProfileFollow.setBackgroundResource(R.drawable.primary_button_bg);
         btnProfileFollow.setTextColor(getResources().getColor(R.color.white));
         btnProfileFollow.setText("Follow");
     }
 
-    private void setFollowOff() {
+    private void setFollowTrue() {
         btnProfileFollow.setBackgroundResource(R.drawable.secondary_button_bg);
         btnProfileFollow.setTextColor(getResources().getColor(R.color.gray3));
         btnProfileFollow.setText("Following");
