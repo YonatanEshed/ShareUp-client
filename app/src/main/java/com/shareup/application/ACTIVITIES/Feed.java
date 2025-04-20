@@ -109,6 +109,25 @@ public class Feed extends BaseActivity {
                     ImageView ivPostPicture = holder.getView("ivPostPicture");
                     Glide.with(getApplicationContext()).load(item.getMediaURL()).into(ivPostPicture);
 
+                    // Set comment button listener
+                    holder.getView("ibPostComment").setOnClickListener(view -> {
+                        // Open Comments Activity
+                        Intent intent = new Intent(getApplicationContext(), Comments.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("postId", item.getId());
+                        startActivity(intent);
+                    });
+
+                    holder.getView("btnViewComments").setOnClickListener(view -> {
+                        // Open Comments Activity
+                        Intent intent = new Intent(getApplicationContext(), Comments.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("postId", item.getId());
+                        startActivity(intent);
+                    });
+
+
+
                     // Set like button state
                     ImageButton ibPostLike = holder.getView("ibPostLike");
                     if (item.isLiked()) {
