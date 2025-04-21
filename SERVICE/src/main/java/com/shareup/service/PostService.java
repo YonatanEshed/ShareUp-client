@@ -8,6 +8,7 @@ import com.shareup.model.EmptyResponse;
 import com.shareup.model.Post;
 import com.shareup.service.BASE.BaseService;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -21,6 +22,16 @@ public class PostService extends BaseService {
     public void getPost(String postId, Consumer<ApiResponse<Post>> callback) {
         String route = postId + "/";
         get(route, Post.class, response -> callback.accept((ApiResponse<Post>) response));
+    }
+
+    public void uploadPost(Post post, File image, Consumer<ApiResponse<Post>> callback) {
+        String route = "";
+        post(route, post.toMap(), image, Post.class, response -> callback.accept((ApiResponse<Post>) response));
+    }
+
+    public void updatePost(String postId, Post post, Consumer<ApiResponse<Post>> callback) {
+        String route = postId + "/";
+        put(route, post.toMap(), Post.class, response -> callback.accept((ApiResponse<Post>) response));
     }
 
     public void getUserPosts(String userId, Consumer<ApiResponse<ArrayList<Post>>> callback) {
