@@ -34,6 +34,11 @@ public class PostService extends BaseService {
         put(route, post.toMap(), Post.class, response -> callback.accept((ApiResponse<Post>) response));
     }
 
+    public void deletePost(String postId, Consumer<ApiResponse<Post>> callback) {
+        String route = postId + "/";
+        delete(route, Post.class, response -> callback.accept((ApiResponse<Post>) response));
+    }
+
     public void getUserPosts(String userId, Consumer<ApiResponse<ArrayList<Post>>> callback) {
         String route = "user/" + userId + "/";
         get(route, true, Post.class, response -> callback.accept((ApiResponse<ArrayList<Post>>) response));

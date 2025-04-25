@@ -2,9 +2,11 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +45,7 @@ public class Feed extends BaseActivity {
     String feedType;
 
     boolean holdLike = false; // to hold the like state while like request is in progress
+    int deletePosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +91,7 @@ public class Feed extends BaseActivity {
 
                     holder.putView("ibPostLike", holder.itemView.findViewById(R.id.ibPostLike));
                     holder.putView("ibPostComment", holder.itemView.findViewById(R.id.ibPostComment));
-                    holder.putView("ibPostLike", holder.itemView.findViewById(R.id.ibPostLike));
+                    holder.putView("ibPostMenu", holder.itemView.findViewById(R.id.ibPostMenu));
 
                     holder.putView("btnViewComments", holder.itemView.findViewById(R.id.btnViewComments));
 
@@ -118,6 +121,11 @@ public class Feed extends BaseActivity {
                         startActivity(intent);
                     });
 
+                    holder.getView("ibPostMenu").setOnClickListener(view -> {
+                        // Open post action menu
+                        openPostActionMenu(item.getId(), holder.getView("ibPostMenu"), position);
+                    });
+
                     holder.getView("btnViewComments").setOnClickListener(view -> {
                         // Open Comments Activity
                         Intent intent = new Intent(getApplicationContext(), Comments.class);
@@ -126,7 +134,10 @@ public class Feed extends BaseActivity {
                         startActivity(intent);
                     });
 
-
+                    if (item.getUser().getId().equals(getUserId())) {
+                        // Show post menu for the current user's posts
+                        holder.getView("ibPostMenu").setVisibility(View.VISIBLE);
+                    }
 
                     // Set like button state
                     ImageButton ibPostLike = holder.getView("ibPostLike");
@@ -186,6 +197,18 @@ public class Feed extends BaseActivity {
             postsAdapter.setItems(posts);
         });
 
+        postViewModel.getDeleteData().observe(this, success -> {
+            hideLoading();
+            if (success) {
+                postsAdapter.getItems().remove(deletePosition);
+                postsAdapter.notifyItemRemoved(deletePosition);
+
+                Toast.makeText(this, "Post deleted successfully", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Failed to delete post", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         likeViewModel.getActionData().observe(this, success -> {
             if (!success) {
                 toggleLike(post, ibLikedPostLike, tvLikedPostLikesCount);
@@ -217,6 +240,32 @@ public class Feed extends BaseActivity {
             // default to search feed(all posts)
             postViewModel.getPostsFeed();
         }
+    }
+
+    private void openPostActionMenu(String postId, ImageButton ibPostMenu, int itemPosition) {
+        PopupMenu popupMenu = new PopupMenu(getApplicationContext(), ibPostMenu);
+        popupMenu.inflate(R.menu.post_actions);
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_edit) {
+                // Handle edit post
+                Intent intent = new Intent(this, UploadPost.class);
+                intent.putExtra("postId", postId);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                return true;
+            } else if (item.getItemId() == R.id.action_delete) {
+                // Handle delete post
+                postViewModel.deletePost(postId);
+                deletePosition = itemPosition;
+                showLoading();
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        popupMenu.show();
     }
 
     private void toggleLike(Post post, ImageButton ibPostLike, TextView tvPostLikesCount) {

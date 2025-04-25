@@ -33,6 +33,10 @@ public class PostViewModel extends BaseViewModel<Post> {
         executeApiCall(ApiMethod.PUT, callback -> postService.updatePost(postId, post, callback::onResult));
     }
 
+    public void deletePost(String postId) {
+        executeApiCall(ApiMethod.DELETE, callback -> postService.deletePost(postId, callback::onResult));
+    }
+
     public void getUserPosts(String userId) {
         executeListApiCall(callback -> postService.getUserPosts(userId, callback::onResult));
     }

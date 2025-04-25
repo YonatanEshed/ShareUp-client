@@ -39,6 +39,21 @@
             android:layout_marginLeft="10dp" />
     </LinearLayout>
 
+    <ImageButton
+        android:id="@+id/ibPostMenu"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/circle_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        android:src="@drawable/more_vert_24px"
+        app:layout_constraintBottom_toBottomOf="@+id/llProfileContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/llProfileContainer" />
+
     <ImageView
         android:id="@+id/ivPostPicture"
         android:layout_width="match_parent"
@@ -101,7 +116,7 @@
         android:id="@+id/btnViewComments"
         style="@style/PrimaryButton"
         android:layout_width="match_parent"
-        android:text="View coments"
+        android:text="View comments"
         android:gravity="start|center_vertical"
         android:layout_marginHorizontal="20dp"
         android:layout_marginTop="2dp"
