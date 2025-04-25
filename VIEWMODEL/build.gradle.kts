@@ -33,7 +33,6 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation (libs.play.services.tasks)
-    implementation(libs.firebase.firestore)
     implementation(project(":MODEL"))
     implementation(project(":SERVICE"))
     implementation(project(":HELPER"))
