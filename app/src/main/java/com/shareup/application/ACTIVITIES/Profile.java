@@ -228,8 +228,8 @@ public class Profile extends BaseActivity {
     protected void onResume() {
         super.onResume();
         profileViewModel.getProfile(userId);
+        postViewModel.getUserPosts(userId);
     }
-
 
     private void toggleFollow() {
         if (isFollowed) {
