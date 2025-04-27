@@ -48,6 +48,8 @@ public class UploadPost extends BaseActivity {
             return insets;
         });
 
+        setTitle("Upload");
+
         initializeViews();
         setViewModel();
         setListeners();

@@ -161,6 +161,8 @@ public class Profile extends BaseActivity {
                 return;
             }
 
+            setTitle(profile.getUsername());
+
             tvProfileUsername.setText(profile.getUsername());
             tvBio.setText(profile.getBio());
             tvFollowingCount.setText(String.valueOf(profile.getFollowingCount()));

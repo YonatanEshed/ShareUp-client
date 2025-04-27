@@ -59,6 +59,15 @@ public class Feed extends BaseActivity {
             return insets;
         });
 
+        feedType = getIntent().getStringExtra("feedType");
+        feedType = feedType == null ? SEARCH_FEED_TAG : feedType;
+
+        if (feedType.equals(HOME_FEED_TAG)) {
+            setTitle("Home");
+        } else if (feedType.equals(SEARCH_FEED_TAG)) {
+            setTitle("Search");
+        }
+
         initializeViews();
         setViewModel();
         setAdapters();
@@ -68,9 +77,6 @@ public class Feed extends BaseActivity {
     @Override
     protected void initializeViews() {
         rvFeedPosts = findViewById(R.id.rvFeedPosts);
-
-        feedType = getIntent().getStringExtra("feedType");
-        feedType = feedType == null ? SEARCH_FEED_TAG : feedType; // default to home feed
     }
 
     @Override

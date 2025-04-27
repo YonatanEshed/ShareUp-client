@@ -56,6 +56,9 @@ public class SinglePost extends BaseActivity {
             return insets;
         });
 
+        setTitle("");
+        showBackButton();
+
         initializeViews();
         setViewModel();
         setListeners();
