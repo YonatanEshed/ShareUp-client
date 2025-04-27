@@ -58,6 +58,9 @@ public class Comments extends BaseActivity {
             return insets;
         });
 
+        setTitle("Comments");
+        showBackButton();
+
         initializeViews();
         setViewModel();
         setAdapters();
