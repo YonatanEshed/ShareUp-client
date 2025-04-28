@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.shareup.helper.FileUtil;
 import com.shareup.model.ApiMethod;
 import com.shareup.model.ApiResponse;
 
@@ -116,6 +117,12 @@ public abstract class BaseService {
 
         // Add file to the multipart request
         if (file != null) {
+            file = FileUtil.resizeImage(file, 1024, 1024, 80);
+            if (file == null) {
+                Log.e("BaseService", "Failed to resize image");
+                callback.accept(null);
+                return;
+            }
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
             filePart = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
         }

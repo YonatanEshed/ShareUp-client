@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -93,6 +94,47 @@ public class FileUtil {
             size = file.length();
         }
         return size;
+    }
+
+    /**
+     * Resize an image from a URI and save it to a temporary file.
+     */
+    public static File resizeImage(File imageFile, int maxWidth, int maxHeight, int quality) {
+        try {
+            // Decode the image from the file
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+
+            // Calculate the scaling factor
+            int originalWidth = options.outWidth;
+            int originalHeight = options.outHeight;
+            int scaleFactor = Math.min(originalWidth / maxWidth, originalHeight / maxHeight);
+
+            // Decode the image with the scaling factor
+            options.inJustDecodeBounds = false;
+            options.inSampleSize = scaleFactor;
+            Bitmap scaledBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+
+            // Further scale the bitmap to exact dimensions
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(scaledBitmap, maxWidth, maxHeight, true);
+
+            // Create a temporary file to save the compressed image
+            File compressedFile = File.createTempFile("resized_image", ".jpg");
+            try (FileOutputStream outputStream = new FileOutputStream(compressedFile)) {
+                // Compress the bitmap into the file
+                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+            }
+
+            // Recycle the bitmaps to free memory
+            scaledBitmap.recycle();
+            resizedBitmap.recycle();
+
+            return compressedFile;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Return null if an error occurs
+        }
     }
 
     /**
