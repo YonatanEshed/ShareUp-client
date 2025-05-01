@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.il.yonatan.core.SessionManager;
 import com.shareup.application.ACTIVITIES.Feed;
 import com.shareup.application.ACTIVITIES.Login;
 
@@ -40,6 +41,13 @@ public abstract class BaseActivity extends AppCompatActivity {
         });
 
         setMenu();
+        
+        // handle invalid tokens
+        SessionManager.getInstance().getForceLogout().observe(this, event -> {
+            if (event != null && event.markHandled()) {
+                logout();
+            }
+        });
     }
 
     protected abstract void initializeViews();
