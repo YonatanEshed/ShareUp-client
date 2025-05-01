@@ -239,8 +239,8 @@ public abstract class BaseService {
         makeApiRequest(ApiMethod.GET, route, null, null, false, modelClass, callback);
     }
 
-    protected <T> void get(String route, boolean responseType, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest(ApiMethod.GET, route, null, null, responseType, modelClass, callback);
+    protected <T> void get(String route, boolean isListResponse, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.GET, route, null, null, isListResponse, modelClass, callback);
     }
 
     protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {
