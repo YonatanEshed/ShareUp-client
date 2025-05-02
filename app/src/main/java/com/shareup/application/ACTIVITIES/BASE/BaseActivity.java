@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -119,6 +120,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         showHeader();
     }
 
+    // Region Header
     protected void showHeader() {
         LinearLayout header = findViewById(R.id.llPageHeader);
         header.setVisibility(LinearLayout.VISIBLE);
@@ -137,11 +139,17 @@ public abstract class BaseActivity extends AppCompatActivity {
         });
     }
 
-    protected void setSelectedNavigationItem(int itemId) {
-        if (bottomNavigationView != null) {
-            bottomNavigationView.setSelectedItemId(itemId);
-        }
+    protected void showHeaderButton(int resId) {
+        ImageButton headerButton = findViewById(R.id.ibHeaderButton);
+        headerButton.setVisibility(LinearLayout.VISIBLE);
+        headerButton.setImageResource(resId);
     }
+
+    protected void setHeaderButtonOnClickListener(View.OnClickListener onClickListener) {
+        ImageButton headerButton = findViewById(R.id.ibHeaderButton);
+        headerButton.setOnClickListener(onClickListener);
+    }
+    //endregion
 
     protected String getUserId() {
         SharedPreferences sharedPreferences = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);

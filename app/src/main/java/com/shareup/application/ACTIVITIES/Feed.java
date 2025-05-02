@@ -66,6 +66,7 @@ public class Feed extends BaseActivity {
             setTitle("Home");
         } else if (feedType.equals(SEARCH_FEED_TAG)) {
             setTitle("Search");
+            showHeaderButton(R.drawable.search_24px);
         }
 
         initializeViews();
@@ -81,7 +82,12 @@ public class Feed extends BaseActivity {
 
     @Override
     protected void setListeners() {
-
+        setHeaderButtonOnClickListener(view -> {
+            // Open Search Activity
+            Intent intent = new Intent(getApplicationContext(), Search.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        });
     }
 
     protected void setAdapters() {
@@ -184,11 +190,6 @@ public class Feed extends BaseActivity {
                         startActivity(intent);
                     });
                 });
-
-        postsAdapter.setOnItemClickListener((item, position) -> {
-            // Open SinglePost activity`
-
-        });
 
         rvFeedPosts.setLayoutManager(new LinearLayoutManager(this));
         rvFeedPosts.setAdapter(postsAdapter);
