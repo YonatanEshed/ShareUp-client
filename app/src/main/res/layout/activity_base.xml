@@ -34,6 +34,18 @@
             android:text="Title" />
     </LinearLayout>
 
+    <ImageButton
+        android:id="@+id/ibHeaderButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginHorizontal="20dp"
+        android:background="@drawable/circle_background"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/llPageHeader"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/llPageHeader" />
+
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
