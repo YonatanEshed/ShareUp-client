@@ -8,7 +8,7 @@
     android:layout_marginHorizontal="20dp"
     tools:context=".ACTIVITIES.UploadPost">
 
-    <ImageButton
+    <ImageView
         android:id="@+id/ibUploadPostPicture"
         android:layout_width="match_parent"
         android:layout_height="0dp"
