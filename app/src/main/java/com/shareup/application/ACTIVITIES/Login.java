@@ -15,8 +15,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
-import com.shareup.helper.inputValidators.EmailRule;
-import com.shareup.helper.inputValidators.Validator;
 import com.shareup.viewmodel.AuthViewModel;
 
 public class Login extends BaseActivity {
@@ -91,12 +89,7 @@ public class Login extends BaseActivity {
             if (authData != null) {
                 Log.d("AuthData", authData.toString());
 
-                authViewModel.saveLogin(authData.getToken(), authData.getUserId());
-
-                Intent intent = new Intent(Login.this, Profile.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                intent.putExtra("userId", authData.getUserId());
-                startActivity(intent);
+                login(authData.getUserId());
             }
         });
 

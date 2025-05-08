@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.il.yonatan.core.SessionManager;
 import com.shareup.application.ACTIVITIES.Feed;
 import com.shareup.application.ACTIVITIES.Login;
@@ -27,6 +29,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.shareup.application.ACTIVITIES.Profile;
 import com.shareup.application.ACTIVITIES.UploadPost;
 import com.shareup.application.R;
+import com.shareup.application.SERVICES.FirebaseNotificationService;
+import com.shareup.viewmodel.FcmTokenViewModel;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
@@ -163,8 +167,44 @@ public abstract class BaseActivity extends AppCompatActivity {
         editor.remove("user_id");
         editor.apply();
 
+        // delete current FCM token
+        FirebaseMessaging.getInstance().deleteToken()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("FCM", "FCM token deleted on logout");
+                    } else {
+                        Log.e("FCM", "Failed to delete FCM token", task.getException());
+                    }
+                });
+
+        // clear FCM token from server
+        FcmTokenViewModel fcmTokenViewModel = new FcmTokenViewModel(getApplication());
+        fcmTokenViewModel.clearFcmToken();
+
         Intent intent = new Intent(this, Login.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
+    protected void login(String userId) {
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String newToken = task.getResult();
+                        Log.d("FCM", "New FCM token on login: " + newToken);
+
+                        // Send this token to your server
+                        FirebaseNotificationService firebaseNotificationService = new FirebaseNotificationService();
+                        firebaseNotificationService.sendTokenToServer(newToken);
+                    } else {
+                        Log.e("FCM", "Failed to get FCM token", task.getException());
+                    }
+                });
+
+        Intent intent = new Intent(this, Profile.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("userId", userId);
         startActivity(intent);
     }
 }
