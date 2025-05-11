@@ -1,5 +1,7 @@
 package com.shareup.viewmodel.BASE;
 
+import android.os.Looper;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -20,8 +22,6 @@ public abstract class BaseViewModel<T> extends ViewModel {
 
     protected MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     protected MutableLiveData<String> message = new MutableLiveData<>(null);
-
-    protected static int statusCode = 0;
 
     public LiveData<T> getData() {
         return data;
@@ -55,71 +55,73 @@ public abstract class BaseViewModel<T> extends ViewModel {
         return message;
     }
 
-    public int getStatusCode() {
-        return statusCode;
-    }
-
     // Helper method to handle API requests
 
     protected void executeApiCall(ApiMethod method, ApiCall<T> apiCall) {
-        isLoading.setValue(true);
-        message.setValue(null); // Clear previous errors
+        updateLiveData(isLoading, true);
+        updateLiveData(message, null); // Clear previous errors
 
         apiCall.execute(result -> {
-            isLoading.postValue(false);
+            updateLiveData(isLoading, false);
 
             if (result != null) {
                 switch (method) {
                     case GET:
-                        data.postValue(result.getData());
+                        updateLiveData(data, result.getData());
                         break;
                     case POST:
-                        postData.postValue(result.getData());
+                        updateLiveData(postData, result.getData());
                         break;
                     case PUT:
-                        updateData.postValue(result.getData());
+                        updateLiveData(updateData, result.getData());
                         break;
                     case DELETE:
-                        deleteData.postValue(result.isSuccess());
+                        updateLiveData(deleteData, result.isSuccess());
                         break;
                     case ACTION:
-                        actionData.postValue(result.isSuccess());
+                        updateLiveData(actionData, result.isSuccess());
                 }
 
-                // set message to null if the result is successful
                 if (!result.isSuccess()) {
-                    message.postValue(result.getMessage());
+                    updateLiveData(message, result.getMessage());
                 } else {
-                    message.postValue(null);
+                    updateLiveData(message, null);
                 }
             } else {
-                message.postValue("Failed to fetch data.");
+                updateLiveData(message, "Failed to fetch data.");
             }
         });
     }
 
 
     protected void executeListApiCall(ApiCall<ArrayList<T>> apiCall) {
-        isLoading.setValue(true);
-        message.setValue(null); // Clear previous errors
+        updateLiveData(isLoading, true);
+        updateLiveData(message, null); // Clear previous errors
 
         apiCall.execute(result -> {
-            isLoading.postValue(false);
+            updateLiveData(isLoading, false);
 
             if (result != null) {
-                // ensure that if data is null, the message is not being set(to prevent display of a message when data was fetched successfully)
                 if (result.getData() == null) {
                     result.setData(new ArrayList<>());
-                    dataList.postValue(result.getData());
-                    message.postValue(result.getMessage());
+                    updateLiveData(dataList, result.getData());
+                    updateLiveData(message, result.getMessage());
                 } else {
-                    dataList.postValue(result.getData());
-                    message.postValue(null);
+                    updateLiveData(dataList, result.getData());
+                    updateLiveData(message, null);
                 }
             } else {
-                message.postValue("Failed to fetch data.");
+                updateLiveData(message, "Failed to fetch data.");
             }
         });
+    }
+
+    private <V> void updateLiveData(MutableLiveData<V> liveData, V value) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            liveData.setValue(value);
+        } else {
+            liveData.postValue(value);
+        }
     }
 
     // Functional interface for API calls
