@@ -1,8 +1,11 @@
 package com.shareup.application.ACTIVITIES.BASE;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -20,8 +23,11 @@ import com.shareup.application.ACTIVITIES.Feed;
 import com.shareup.application.ACTIVITIES.Login;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -30,6 +36,7 @@ import com.shareup.application.ACTIVITIES.Profile;
 import com.shareup.application.ACTIVITIES.UploadPost;
 import com.shareup.application.R;
 import com.shareup.application.SERVICES.FirebaseNotificationService;
+import com.shareup.viewmodel.AuthViewModel;
 import com.shareup.viewmodel.FcmTokenViewModel;
 
 public abstract class BaseActivity extends AppCompatActivity {
@@ -50,7 +57,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         // handle invalid tokens
         SessionManager.getInstance().getForceLogout().observe(this, event -> {
             if (event != null && event.markHandled()) {
-                logout();
+                Log.d("force logout", "Force logout triggered");
+                logout(true);
             }
         });
     }
@@ -161,12 +169,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected void logout() {
-        SharedPreferences sharedPreferences = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove("jwt_token");
-        editor.remove("user_id");
-        editor.apply();
+        logout(false);
+    }
 
+    protected void logout(boolean isForced) {
         // delete current FCM token
         FirebaseMessaging.getInstance().deleteToken()
                 .addOnCompleteListener(task -> {
@@ -179,14 +185,34 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // clear FCM token from server
         FcmTokenViewModel fcmTokenViewModel = new FcmTokenViewModel(getApplication());
-        fcmTokenViewModel.clearFcmToken();
 
-        Intent intent = new Intent(this, Login.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        // if the logout is forced, we don't need to clear the token from the server
+        if (!isForced)
+            fcmTokenViewModel.clearFcmToken();
+
+        fcmTokenViewModel.getDeleteData().observe(this, success -> {
+            if (success) {
+                // clear user data
+                SharedPreferences sharedPreferences = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.remove("jwt_token");
+                editor.remove("user_id");
+                editor.apply();
+
+                Intent intent = new Intent(this, Login.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            } else {
+                Log.e("FCM", "Failed to clear FCM token from server");
+            }
+        });
     }
 
-    protected void login(String userId) {
+    protected void login(String token, String userId) {
+
+        AuthViewModel authViewModel = new AuthViewModel(getApplication());
+
+        authViewModel.saveLogin(token, userId);
 
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(task -> {
@@ -195,16 +221,44 @@ public abstract class BaseActivity extends AppCompatActivity {
                         Log.d("FCM", "New FCM token on login: " + newToken);
 
                         // Send this token to your server
-                        FirebaseNotificationService firebaseNotificationService = new FirebaseNotificationService();
-                        firebaseNotificationService.sendTokenToServer(newToken);
+                        FcmTokenViewModel fcmTokenViewModel = new FcmTokenViewModel(getApplication());
+                        fcmTokenViewModel.setFcmToken(token);
                     } else {
                         Log.e("FCM", "Failed to get FCM token", task.getException());
                     }
                 });
+
+        requestPermission(Manifest.permission.POST_NOTIFICATIONS);
 
         Intent intent = new Intent(this, Profile.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("userId", userId);
         startActivity(intent);
     }
+
+    // Region Permissions
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Toast.makeText(this, "Notifications permission granted",Toast.LENGTH_SHORT)
+                            .show();
+                } else {
+                    Toast.makeText(this, "FCM can't post notifications without granting permission",
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+
+    protected void requestPermission(String permission) {
+        // This is only necessary for API Level > 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, permission) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // FCM SDK (and your app) can post notifications.
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(permission);
+            }
+        }
+    }
+    //endregion
 }

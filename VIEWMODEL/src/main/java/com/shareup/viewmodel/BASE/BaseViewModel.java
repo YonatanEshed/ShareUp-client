@@ -56,7 +56,6 @@ public abstract class BaseViewModel<T> extends ViewModel {
     }
 
     // Helper method to handle API requests
-
     protected void executeApiCall(ApiMethod method, ApiCall<T> apiCall) {
         updateLiveData(isLoading, true);
         updateLiveData(message, null); // Clear previous errors

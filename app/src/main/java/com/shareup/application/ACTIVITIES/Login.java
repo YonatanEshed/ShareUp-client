@@ -93,7 +93,7 @@ public class Login extends BaseActivity {
             if (authData != null) {
                 Log.d("AuthData", authData.toString());
 
-                login(authData.getUserId());
+                login(authData.getToken(), authData.getUserId());
             }
         });
 
