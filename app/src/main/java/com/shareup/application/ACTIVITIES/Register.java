@@ -97,7 +97,7 @@ public class Register extends BaseActivity {
 
                 authViewModel.saveLogin(authData.getToken(), authData.getUserId());
 
-                login(authData.getUserId());
+                login(authData.getToken(), authData.getUserId());
             }
         });
 
