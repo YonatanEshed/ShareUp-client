@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -38,6 +39,7 @@ public class Profile extends BaseActivity {
     Button btnProfileFollow, btnProfileMessage, btnEditProfile, btnProfileLogout;
     ImageView ivProfilePicture;
     LinearLayout profileButtons, profileButtonsOwn;
+    ConstraintLayout clFollowers, clFollowing;
     RecyclerView rvProfilePosts;
 
     String userId;
@@ -85,6 +87,10 @@ public class Profile extends BaseActivity {
         profileButtons = findViewById(R.id.profileButtons);
         profileButtonsOwn = findViewById(R.id.profileButtonsOwn);
 
+        // ConstraintLayouts
+        clFollowers = findViewById(R.id.clFollowers);
+        clFollowing = findViewById(R.id.clFollowing);
+
         // RecyclerView
         rvProfilePosts = findViewById(R.id.rvProfilePosts);
 
@@ -116,6 +122,20 @@ public class Profile extends BaseActivity {
 
         btnProfileLogout.setOnClickListener(view -> {
             logout();
+        });
+
+        clFollowers.setOnClickListener(view -> {
+            Intent intent = new Intent(Profile.this, ProfileList.class);
+            intent.putExtra("userId", userId);
+            intent.putExtra("listType", ProfileList.FOLLOWERS_LIST_TAG);
+            startActivity(intent);
+        });
+
+        clFollowing.setOnClickListener(view -> {
+            Intent intent = new Intent(Profile.this, ProfileList.class);
+            intent.putExtra("userId", userId);
+            intent.putExtra("listType", ProfileList.FOLLOWINGS_LIST_TAG);
+            startActivity(intent);
         });
 
         postsAdapter.setOnItemClickListener((item, position) -> {

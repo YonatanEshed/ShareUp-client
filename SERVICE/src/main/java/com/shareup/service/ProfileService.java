@@ -8,6 +8,7 @@ import com.shareup.model.Profile;
 import com.shareup.service.BASE.BaseService;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class ProfileService extends BaseService {
@@ -39,5 +40,15 @@ public class ProfileService extends BaseService {
     public void unfollowUser(String userId, Consumer<ApiResponse<Boolean>> callback) {
         String route = userId + "/follow/";
         delete(route, Boolean.class, response -> callback.accept((ApiResponse<Boolean>) response));
+    }
+
+    public void getFollowers(String userId, Consumer<ApiResponse<ArrayList<Profile>>> callback) {
+        String route = userId + "/followers/";
+        get(route, true, Profile.class,response -> callback.accept((ApiResponse<ArrayList<Profile>>) response));
+    }
+
+    public void getFollowings(String userId, Consumer<ApiResponse<ArrayList<Profile>>> callback) {
+        String route = userId + "/following/";
+        get(route, true, Profile.class, response -> callback.accept((ApiResponse<ArrayList<Profile>>) response));
     }
 }

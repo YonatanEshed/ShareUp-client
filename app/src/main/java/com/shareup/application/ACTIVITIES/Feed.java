@@ -180,6 +180,17 @@ public class Feed extends BaseActivity {
                         ibLikedPostLike = holder.getView("ibPostLike"); // Store the like button
                     });
 
+                    ibPostLike.setOnLongClickListener(view -> {
+                        // Show like count
+                        Intent intent = new Intent(Feed.this, ProfileList.class);
+                        intent.putExtra("listType", ProfileList.LIKES_LIST_TAG);
+                        intent.putExtra("postId", item.getId());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+
+                        return true;
+                    });
+
                     // assign listener to profile container
                     LinearLayout llProfileContainer = holder.getView("llProfileContainer");
                     llProfileContainer.setOnClickListener(view -> {

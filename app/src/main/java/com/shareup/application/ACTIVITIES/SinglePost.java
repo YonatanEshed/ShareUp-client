@@ -105,6 +105,16 @@ public class SinglePost extends BaseActivity {
             toggleLike();
         });
 
+        ibPostLike.setOnLongClickListener(v -> {
+            Intent intent = new Intent(SinglePost.this, ProfileList.class);
+            intent.putExtra("listType", ProfileList.LIKES_LIST_TAG);
+            intent.putExtra("postId", postId);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+            return true;
+        });
+
         ibPostComment.setOnClickListener(v -> {
             // Open CommentActivity
             Intent intent = new Intent(SinglePost.this, Comments.class);

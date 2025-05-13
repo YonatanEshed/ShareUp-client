@@ -6,6 +6,7 @@ import com.shareup.model.ApiResponse;
 import com.shareup.model.Comment;
 import com.shareup.model.EmptyResponse;
 import com.shareup.model.Post;
+import com.shareup.model.Profile;
 import com.shareup.service.BASE.BaseService;
 
 import java.io.File;
@@ -62,6 +63,11 @@ public class PostService extends BaseService {
     public void unlikePost(String postId, Consumer<ApiResponse<Boolean>> callback) {
         String route = postId + "/like/";
         delete(route, EmptyResponse.class, response -> callback.accept((ApiResponse<Boolean>) response));
+    }
+
+    public void getPostLikes(String postId, Consumer<ApiResponse<ArrayList<Profile>>> callback) {
+        String route = postId + "/likes/";
+        get(route, true, Profile.class, response -> callback.accept((ApiResponse<ArrayList<Profile>>) response));
     }
 
     public void getComments(String postId, Consumer<ApiResponse<ArrayList<Comment>>> callback) {
