@@ -87,7 +87,7 @@ public class Comments extends BaseActivity {
         ibSendComment.setOnClickListener(view -> {
             String commentContent = etAddComment.getText().toString();
 
-            if (!commentContent.isEmpty()) {
+            if (!commentContent.isEmpty() || !commentContent.matches(".*[a-zA-Z0-9].*")) {
                 commentViewModel.addComment(postId, commentContent);
                 etAddComment.setText("");
             }

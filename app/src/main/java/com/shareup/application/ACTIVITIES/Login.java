@@ -64,9 +64,13 @@ public class Login extends BaseActivity {
                 String email = etLoginEmail.getText().toString();
                 String password = etLoginPassword.getText().toString();
 
-
-                // add validations
-
+                if (email.isEmpty()) {
+                    tvLoginError.setText("Email is required");
+                    return;
+                } else if (password.isEmpty()) {
+                    tvLoginError.setText("Password is required");
+                    return;
+                }
 
                 authViewModel.login(email, password);
             }

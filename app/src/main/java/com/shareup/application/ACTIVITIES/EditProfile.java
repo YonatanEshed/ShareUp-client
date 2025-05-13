@@ -78,6 +78,11 @@ public class EditProfile extends BaseActivity {
             String username = etEditProfileUsername.getText().toString();
             String bio = etEditProfileBio.getText().toString();
 
+            if (username.isEmpty() || !username.matches(".*[a-zA-Z0-9].*")) {
+                tvEditProfileError.setText("Username cannot be empty");
+                return;
+            }
+
             if (newProfilePictureUri != null) {
                 try {
                     File image = FileUtil.convertUriToPngFile(this, newProfilePictureUri);

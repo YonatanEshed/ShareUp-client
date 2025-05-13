@@ -66,8 +66,13 @@ public class Register extends BaseActivity {
                 String username = etRegisterUsername.getText().toString();
                 String password = etRegisterPassword.getText().toString();
 
-                // add validations
-
+                if (email.isEmpty()) {
+                    tvRegisterError.setText("Email is required");
+                    return;
+                } else if (password.isEmpty()) {
+                    tvRegisterError.setText("Password is required");
+                    return;
+                }
 
                 authViewModel.register(email, username, password);
             }
