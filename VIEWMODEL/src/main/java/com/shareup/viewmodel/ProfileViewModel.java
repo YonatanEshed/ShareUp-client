@@ -5,15 +5,18 @@ import android.app.Application;
 import com.shareup.model.ApiMethod;
 import com.shareup.model.Profile;
 import com.shareup.service.ProfileService;
+import com.shareup.service.SearchService;
 import com.shareup.viewmodel.BASE.BaseViewModel;
 
 import java.io.File;
 
 public class ProfileViewModel extends BaseViewModel<Profile> {
     private final ProfileService profileService;
+    private final SearchService searchService;
 
     public ProfileViewModel(Application application) {
         this.profileService = new ProfileService(application);
+        this.searchService = new SearchService(application);
     }
 
     public void getProfile(String userId) {
@@ -32,5 +35,9 @@ public class ProfileViewModel extends BaseViewModel<Profile> {
         profile.setUsername(username);
         profile.setBio(bio);
         executeApiCall(ApiMethod.PUT, callback -> profileService.updateProfileWithImage(profile, profilePicture, callback::onResult));
+    }
+
+    public void searchUsers(String query) {
+        executeListApiCall(callback -> searchService.search(query, callback::onResult));
     }
 }

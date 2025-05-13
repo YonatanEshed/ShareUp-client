@@ -10,5 +10,10 @@
 
     </style>
 
+    <style name="BottomNavBar" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/black</item>
+        <item name="backgroundTint">@color/white</item>
+    </style>
+
     <style name="Theme.ShareUp" parent="Base.Theme.ShareUp" />
 </resources>

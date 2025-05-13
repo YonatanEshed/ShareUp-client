@@ -161,6 +161,8 @@ public class Profile extends BaseActivity {
                 return;
             }
 
+            setTitle(profile.getUsername());
+
             tvProfileUsername.setText(profile.getUsername());
             tvBio.setText(profile.getBio());
             tvFollowingCount.setText(String.valueOf(profile.getFollowingCount()));
@@ -228,8 +230,8 @@ public class Profile extends BaseActivity {
     protected void onResume() {
         super.onResume();
         profileViewModel.getProfile(userId);
+        postViewModel.getUserPosts(userId);
     }
-
 
     private void toggleFollow() {
         if (isFollowed) {

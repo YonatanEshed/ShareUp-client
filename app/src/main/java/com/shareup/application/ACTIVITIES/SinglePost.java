@@ -4,10 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,7 +31,7 @@ public class SinglePost extends BaseActivity {
 
     TextView tvPostUsername, tvPostLikesCount, tvPostDescription;
     ImageView ivProfilePicture, ivPostPicture;
-    ImageButton ibPostLike, ibPostComment;
+    ImageButton ibPostLike, ibPostComment, ibPostMenu;
     Button btnViewComments;
     LinearLayout llProfileContainer;
 
@@ -54,6 +56,9 @@ public class SinglePost extends BaseActivity {
             return insets;
         });
 
+        setTitle("");
+        showBackButton();
+
         initializeViews();
         setViewModel();
         setListeners();
@@ -73,6 +78,7 @@ public class SinglePost extends BaseActivity {
         // ImageButtons
         ibPostLike = findViewById(R.id.ibPostLike);
         ibPostComment = findViewById(R.id.ibPostComment);
+        ibPostMenu = findViewById(R.id.ibPostMenu);
 
         // Button
         btnViewComments = findViewById(R.id.btnViewComments);
@@ -105,6 +111,10 @@ public class SinglePost extends BaseActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("postId", postId);
             startActivity(intent);
+        });
+
+        ibPostMenu.setOnClickListener(v -> {
+            openPostActionMenu();
         });
 
         btnViewComments.setOnClickListener(v -> {
@@ -154,9 +164,22 @@ public class SinglePost extends BaseActivity {
                 isLiked = false;
             }
 
+            if (post.getUser().getId().equals(getUserId())) {
+                ibPostMenu.setVisibility(View.VISIBLE);
+            }
+
             setLikeCount(post.getLikesCount());
 
             userId = post.getUser().getId();
+        });
+
+        postViewModel.getDeleteData(). observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Post deleted", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(this, "Error deleting post", Toast.LENGTH_SHORT).show();
+            }
         });
 
         likeViewModel.getActionData().observe(this, success -> {
@@ -170,8 +193,40 @@ public class SinglePost extends BaseActivity {
             holdLike = isLoading;
         });
 
+        postViewModel.getIsLoading().observe(this, isLoading -> {
+            if (isLoading) {
+                showLoading();
+            } else {
+                hideLoading();
+            }
+        });
+
         // Load the post data
         postViewModel.getPost(postId);
+    }
+
+    private void openPostActionMenu() {
+        PopupMenu popupMenu = new PopupMenu(getApplicationContext(), ibPostMenu);
+        popupMenu.inflate(R.menu.post_actions);
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_edit) {
+                // Handle edit post
+                Intent intent = new Intent(SinglePost.this, UploadPost.class);
+                intent.putExtra("postId", postId);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                return true;
+            } else if (item.getItemId() == R.id.action_delete) {
+                // Handle delete post
+                postViewModel.deletePost(postId);
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        popupMenu.show();
     }
 
     private void toggleLike() {
@@ -197,5 +252,11 @@ public class SinglePost extends BaseActivity {
     private void setLikeCount(int count) {
         likesCount = count;
         tvPostLikesCount.setText(count + " Likes");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        postViewModel.getPost(postId);
     }
 }

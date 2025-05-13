@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.il.yonatan.core.SessionManager;
+import com.shareup.helper.FileUtil;
 import com.shareup.model.ApiMethod;
 import com.shareup.model.ApiResponse;
 
@@ -116,6 +118,12 @@ public abstract class BaseService {
 
         // Add file to the multipart request
         if (file != null) {
+            file = FileUtil.resizeImage(file, 1024, 1024, 80);
+            if (file == null) {
+                Log.e("BaseService", "Failed to resize image");
+                callback.accept(null);
+                return;
+            }
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
             filePart = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
         }
@@ -195,6 +203,10 @@ public abstract class BaseService {
 
                         Log.d("BaseService", "Response JSON: " + json);
 
+                        if (response.code() == 401) {
+                            SessionManager.getInstance().triggerLogout();
+                        }
+
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
                         ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
 
@@ -227,8 +239,8 @@ public abstract class BaseService {
         makeApiRequest(ApiMethod.GET, route, null, null, false, modelClass, callback);
     }
 
-    protected <T> void get(String route, boolean responseType, Class<T> modelClass, Consumer<Object> callback) {
-        makeApiRequest(ApiMethod.GET, route, null, null, responseType, modelClass, callback);
+    protected <T> void get(String route, boolean isListResponse, Class<T> modelClass, Consumer<Object> callback) {
+        makeApiRequest(ApiMethod.GET, route, null, null, isListResponse, modelClass, callback);
     }
 
     protected <T> void post(String route, Map<String, Object> body, Class<T> modelClass, Consumer<Object> callback) {

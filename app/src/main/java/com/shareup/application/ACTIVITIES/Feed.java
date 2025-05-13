@@ -2,9 +2,11 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +45,7 @@ public class Feed extends BaseActivity {
     String feedType;
 
     boolean holdLike = false; // to hold the like state while like request is in progress
+    int deletePosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +59,16 @@ public class Feed extends BaseActivity {
             return insets;
         });
 
+        feedType = getIntent().getStringExtra("feedType");
+        feedType = feedType == null ? SEARCH_FEED_TAG : feedType;
+
+        if (feedType.equals(HOME_FEED_TAG)) {
+            setTitle("Home");
+        } else if (feedType.equals(SEARCH_FEED_TAG)) {
+            setTitle("Search");
+            showHeaderButton(R.drawable.search_24px);
+        }
+
         initializeViews();
         setViewModel();
         setAdapters();
@@ -65,14 +78,16 @@ public class Feed extends BaseActivity {
     @Override
     protected void initializeViews() {
         rvFeedPosts = findViewById(R.id.rvFeedPosts);
-
-        feedType = getIntent().getStringExtra("feedType");
-        feedType = feedType == null ? SEARCH_FEED_TAG : feedType; // default to home feed
     }
 
     @Override
     protected void setListeners() {
-
+        setHeaderButtonOnClickListener(view -> {
+            // Open Search Activity
+            Intent intent = new Intent(getApplicationContext(), Search.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        });
     }
 
     protected void setAdapters() {
@@ -88,7 +103,7 @@ public class Feed extends BaseActivity {
 
                     holder.putView("ibPostLike", holder.itemView.findViewById(R.id.ibPostLike));
                     holder.putView("ibPostComment", holder.itemView.findViewById(R.id.ibPostComment));
-                    holder.putView("ibPostLike", holder.itemView.findViewById(R.id.ibPostLike));
+                    holder.putView("ibPostMenu", holder.itemView.findViewById(R.id.ibPostMenu));
 
                     holder.putView("btnViewComments", holder.itemView.findViewById(R.id.btnViewComments));
 
@@ -108,6 +123,33 @@ public class Feed extends BaseActivity {
                     // Load post picture
                     ImageView ivPostPicture = holder.getView("ivPostPicture");
                     Glide.with(getApplicationContext()).load(item.getMediaURL()).into(ivPostPicture);
+
+                    // Set comment button listener
+                    holder.getView("ibPostComment").setOnClickListener(view -> {
+                        // Open Comments Activity
+                        Intent intent = new Intent(getApplicationContext(), Comments.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("postId", item.getId());
+                        startActivity(intent);
+                    });
+
+                    holder.getView("ibPostMenu").setOnClickListener(view -> {
+                        // Open post action menu
+                        openPostActionMenu(item.getId(), holder.getView("ibPostMenu"), position);
+                    });
+
+                    holder.getView("btnViewComments").setOnClickListener(view -> {
+                        // Open Comments Activity
+                        Intent intent = new Intent(getApplicationContext(), Comments.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("postId", item.getId());
+                        startActivity(intent);
+                    });
+
+                    if (item.getUser().getId().equals(getUserId())) {
+                        // Show post menu for the current user's posts
+                        holder.getView("ibPostMenu").setVisibility(View.VISIBLE);
+                    }
 
                     // Set like button state
                     ImageButton ibPostLike = holder.getView("ibPostLike");
@@ -149,11 +191,6 @@ public class Feed extends BaseActivity {
                     });
                 });
 
-        postsAdapter.setOnItemClickListener((item, position) -> {
-            // Open SinglePost activity`
-
-        });
-
         rvFeedPosts.setLayoutManager(new LinearLayoutManager(this));
         rvFeedPosts.setAdapter(postsAdapter);
     }
@@ -165,6 +202,18 @@ public class Feed extends BaseActivity {
 
         postViewModel.getDataList().observe(this, posts -> {
             postsAdapter.setItems(posts);
+        });
+
+        postViewModel.getDeleteData().observe(this, success -> {
+            hideLoading();
+            if (success) {
+                postsAdapter.getItems().remove(deletePosition);
+                postsAdapter.notifyItemRemoved(deletePosition);
+
+                Toast.makeText(this, "Post deleted successfully", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Failed to delete post", Toast.LENGTH_SHORT).show();
+            }
         });
 
         likeViewModel.getActionData().observe(this, success -> {
@@ -198,6 +247,32 @@ public class Feed extends BaseActivity {
             // default to search feed(all posts)
             postViewModel.getPostsFeed();
         }
+    }
+
+    private void openPostActionMenu(String postId, ImageButton ibPostMenu, int itemPosition) {
+        PopupMenu popupMenu = new PopupMenu(getApplicationContext(), ibPostMenu);
+        popupMenu.inflate(R.menu.post_actions);
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_edit) {
+                // Handle edit post
+                Intent intent = new Intent(this, UploadPost.class);
+                intent.putExtra("postId", postId);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                return true;
+            } else if (item.getItemId() == R.id.action_delete) {
+                // Handle delete post
+                postViewModel.deletePost(postId);
+                deletePosition = itemPosition;
+                showLoading();
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        popupMenu.show();
     }
 
     private void toggleLike(Post post, ImageButton ibPostLike, TextView tvPostLikesCount) {

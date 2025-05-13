@@ -48,7 +48,11 @@ public class EditProfile extends BaseActivity {
             return insets;
         });
 
+        setTitle("Edit Profile");
+
         initializeViews();
+        setViewModel();
+        setListeners();
     }
 
     @Override
@@ -66,8 +70,6 @@ public class EditProfile extends BaseActivity {
         // TextViews
         tvEditProfileError = findViewById(R.id.tvEditProfileError);
 
-        setViewModel();
-        setListeners();
     }
 
     @Override
