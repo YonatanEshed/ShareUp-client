@@ -228,15 +228,18 @@ public abstract class BaseActivity extends AppCompatActivity {
                     }
                 });
 
-        requestPermission(Manifest.permission.POST_NOTIFICATIONS);
+        requestPermission(Manifest.permission.POST_NOTIFICATIONS, () -> {
+            Intent intent = new Intent(this, Profile.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra("userId", userId);
+            startActivity(intent);
+        });
 
-        Intent intent = new Intent(this, Profile.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.putExtra("userId", userId);
-        startActivity(intent);
     }
 
     // Region Permissions
+    private Runnable permissionCallback;
+
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -246,17 +249,34 @@ public abstract class BaseActivity extends AppCompatActivity {
                     Toast.makeText(this, "FCM can't post notifications without granting permission",
                             Toast.LENGTH_LONG).show();
                 }
+
+                if (permissionCallback != null) {
+                    permissionCallback.run();
+                    permissionCallback = null; // Clear the callback after execution
+                }
             });
 
     protected void requestPermission(String permission) {
+        requestPermission(permission, null);
+    }
+
+    protected void requestPermission(String permission, Runnable onPermissionGranted) {
+        this.permissionCallback = onPermissionGranted;
+
         // This is only necessary for API Level > 33 (TIRAMISU)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, permission) ==
                     PackageManager.PERMISSION_GRANTED) {
                 // FCM SDK (and your app) can post notifications.
+                Log.d("Permission", "Permission already granted: " + permission);
             } else {
                 // Directly ask for the permission
+                Log.d("Permission", "Requesting permission: " + permission);
                 requestPermissionLauncher.launch(permission);
+            }
+        } else {
+            if (onPermissionGranted != null) {
+                onPermissionGranted.run();
             }
         }
     }
