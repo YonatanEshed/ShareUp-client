@@ -45,6 +45,8 @@ dependencies {
     implementation(project(":MODEL"))
     implementation(project(":HELPER"))
     implementation(libs.firebase.messaging)
+    implementation(platform("com.google.firebase:firebase-bom:32.2.3"))
+    implementation("com.google.firebase:firebase-analytics")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
