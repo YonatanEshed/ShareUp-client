@@ -9,7 +9,7 @@
     tools:context=".ACTIVITIES.UploadPostActivity">
 
     <ImageView
-        android:id="@+id/ibUploadPostPicture"
+        android:id="@+id/ivUploadPostPicture"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="30dp"
@@ -31,7 +31,7 @@
         android:layout_marginTop="10dp"
         android:paddingHorizontal="30dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ibUploadPostPicture"/>
+        app:layout_constraintTop_toBottomOf="@+id/ivUploadPostPicture"/>
 
     <EditText
         android:id="@+id/etUploadPostDescription"
@@ -44,7 +44,7 @@
         android:layout_marginTop="60dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ibUploadPostPicture" />
+        app:layout_constraintTop_toBottomOf="@+id/ivUploadPostPicture" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnUploadPostPublish"

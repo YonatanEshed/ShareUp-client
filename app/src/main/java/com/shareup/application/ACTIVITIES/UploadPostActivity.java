@@ -58,7 +58,7 @@ public class UploadPostActivity extends BaseActivity {
     @Override
     protected void initializeViews() {
         // ImageViews
-        ibUploadPostPicture = findViewById(R.id.ibUploadPostPicture);
+        ibUploadPostPicture = findViewById(R.id.ivUploadPostPicture);
 
         // EditTexts
         etUploadPostDescription = findViewById(R.id.etUploadPostDescription);
