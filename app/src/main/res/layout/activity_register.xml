@@ -8,7 +8,7 @@
     android:background="@color/white"
 
     android:layout_marginHorizontal="20dp"
-    tools:context=".ACTIVITIES.Register">
+    tools:context=".ACTIVITIES.RegisterActivity">
 
     <TextView
         android:id="@+id/RegisterBigTitle"

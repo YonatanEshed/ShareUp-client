@@ -17,7 +17,7 @@ import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
 import com.shareup.viewmodel.AuthViewModel;
 
-public class Register extends BaseActivity {
+public class RegisterActivity extends BaseActivity {
     AuthViewModel authViewModel;
 
     Button btnRegister, btnRegisterToLogin;
@@ -81,7 +81,7 @@ public class Register extends BaseActivity {
         btnRegisterToLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Register.this, Login.class);
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }

@@ -19,9 +19,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.il.yonatan.core.SessionManager;
-import com.shareup.application.ACTIVITIES.ActivityList;
-import com.shareup.application.ACTIVITIES.Feed;
-import com.shareup.application.ACTIVITIES.Login;
+import com.shareup.application.ACTIVITIES.ActivityListActivity;
+import com.shareup.application.ACTIVITIES.FeedActivity;
+import com.shareup.application.ACTIVITIES.LoginActivity;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -33,8 +33,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.shareup.application.ACTIVITIES.Profile;
-import com.shareup.application.ACTIVITIES.UploadPost;
+import com.shareup.application.ACTIVITIES.ProfileActivity;
+import com.shareup.application.ACTIVITIES.UploadPostActivity;
 import com.shareup.application.R;
 import com.shareup.viewmodel.AuthViewModel;
 import com.shareup.viewmodel.FcmTokenViewModel;
@@ -91,29 +91,29 @@ public abstract class BaseActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
 
                 if (itemId == R.id.navigation_home){
-                    Intent intent = new Intent(BaseActivity.this, Feed.class);
+                    Intent intent = new Intent(BaseActivity.this, FeedActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("feedType", Feed.HOME_FEED_TAG);
+                    intent.putExtra("feedType", FeedActivity.HOME_FEED_TAG);
                     startActivity(intent);
 
                 } else if(itemId == R.id.navigation_search){
-                    Intent intent = new Intent(BaseActivity.this, Feed.class);
+                    Intent intent = new Intent(BaseActivity.this, FeedActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("feedType", Feed.SEARCH_FEED_TAG);
+                    intent.putExtra("feedType", FeedActivity.SEARCH_FEED_TAG);
                     startActivity(intent);
 
                 } else if(itemId == R.id.navigation_upload){
-                    Intent intent = new Intent(BaseActivity.this, UploadPost.class);
+                    Intent intent = new Intent(BaseActivity.this, UploadPostActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
 
                 } else if(itemId == R.id.navigation_activity){
-                    Intent intent = new Intent(BaseActivity.this, ActivityList.class);
+                    Intent intent = new Intent(BaseActivity.this, ActivityListActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
 
                 } else if(itemId == R.id.navigation_profile){
-                    Intent intent = new Intent(BaseActivity.this, Profile.class);
+                    Intent intent = new Intent(BaseActivity.this, ProfileActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("userId", getUserId());
                     startActivity(intent);
@@ -202,7 +202,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 editor.remove("user_id");
                 editor.apply();
 
-                Intent intent = new Intent(this, Login.class);
+                Intent intent = new Intent(this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             } else {
@@ -232,7 +232,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 });
 
         requestPermission(Manifest.permission.POST_NOTIFICATIONS, () -> {
-            Intent intent = new Intent(this, Profile.class);
+            Intent intent = new Intent(this, ProfileActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.putExtra("userId", userId);
             startActivity(intent);

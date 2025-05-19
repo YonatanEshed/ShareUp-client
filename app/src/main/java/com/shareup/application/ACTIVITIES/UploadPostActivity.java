@@ -24,7 +24,7 @@ import com.shareup.viewmodel.PostViewModel;
 import java.io.File;
 import java.io.IOException;
 
-public class UploadPost extends BaseActivity {
+public class UploadPostActivity extends BaseActivity {
     PostViewModel postViewModel;
 
     ImageView ibUploadPostPicture;

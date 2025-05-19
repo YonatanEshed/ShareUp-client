@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -26,7 +25,7 @@ import com.shareup.viewmodel.ProfileViewModel;
 
 import java.util.ArrayList;
 
-public class Search extends BaseActivity {
+public class SearchActivity extends BaseActivity {
     private ProfileViewModel profileViewModel;
 
     private ProfileAdapter profileAdapter;
@@ -114,7 +113,7 @@ public class Search extends BaseActivity {
                 });
 
         profileAdapter.setOnItemClickListener((view, position) -> {
-            Intent intent = new Intent(Search.this, Profile.class);
+            Intent intent = new Intent(SearchActivity.this, ProfileActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("userId", profileAdapter.getItem(position).getId());
             startActivity(intent);

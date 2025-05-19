@@ -17,7 +17,7 @@ import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
 import com.shareup.viewmodel.AuthViewModel;
 
-public class Login extends BaseActivity {
+public class LoginActivity extends BaseActivity {
     AuthViewModel authViewModel;
 
     Button btnLogin, btnLoginToRegister;
@@ -79,7 +79,7 @@ public class Login extends BaseActivity {
         btnLoginToRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Login.this, Register.class);
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
@@ -114,7 +114,7 @@ public class Login extends BaseActivity {
 
         // skip login if already logged in
         if (authViewModel.isLoggedIn()) {
-            Intent intent = new Intent(Login.this, Profile.class);
+            Intent intent = new Intent(LoginActivity.this, ProfileActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.putExtra("userId", getUserId());
             startActivity(intent);

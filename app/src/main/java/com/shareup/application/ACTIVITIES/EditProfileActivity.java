@@ -1,10 +1,8 @@
 package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
-import android.media.MediaParser;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -19,14 +17,12 @@ import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
 import com.shareup.helper.FileUtil;
-import com.shareup.model.Comment;
 import com.shareup.viewmodel.ProfileViewModel;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
-public class EditProfile extends BaseActivity {
+public class EditProfileActivity extends BaseActivity {
     ProfileViewModel profileViewModel;
 
     Button btnEditProfileSave;

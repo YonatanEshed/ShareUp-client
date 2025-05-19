@@ -13,13 +13,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.ADPTERS.ActivityAdapter;
-import com.shareup.application.ADPTERS.ProfileAdapter;
 import com.shareup.application.R;
 import com.shareup.viewmodel.ActivityViewModel;
 
 import java.util.ArrayList;
 
-public class ActivityList extends BaseActivity {
+public class ActivityListActivity extends BaseActivity {
 
     private ActivityViewModel activityViewModel;
 

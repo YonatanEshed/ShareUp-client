@@ -2,15 +2,11 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -25,7 +21,7 @@ import com.shareup.viewmodel.ProfileViewModel;
 
 import java.util.ArrayList;
 
-public class ProfileList extends BaseActivity {
+public class ProfileListActivity extends BaseActivity {
     public static final String LIKES_LIST_TAG = "likes_list";
     public static final String FOLLOWERS_LIST_TAG = "followers_list";
     public static final String FOLLOWINGS_LIST_TAG = "followings_list";
@@ -115,7 +111,7 @@ public class ProfileList extends BaseActivity {
                 });
 
         profileAdapter.setOnItemClickListener((view, position) -> {
-            Intent intent = new Intent(this, Profile.class);
+            Intent intent = new Intent(this, ProfileActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("userId", profileAdapter.getItem(position).getId());
             startActivity(intent);

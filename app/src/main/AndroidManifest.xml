@@ -16,29 +16,29 @@
         android:theme="@style/Theme.ShareUp"
         tools:targetApi="31">
         <activity
-            android:name=".ACTIVITIES.ActivityList"
+            android:name=".ACTIVITIES.ActivityListActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.ProfileList"
+            android:name=".ACTIVITIES.ProfileListActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.Search"
+            android:name=".ACTIVITIES.SearchActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.UploadPost"
+            android:name=".ACTIVITIES.UploadPostActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.Feed"
+            android:name=".ACTIVITIES.FeedActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.Comments"
+            android:name=".ACTIVITIES.CommentsActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.SinglePost"
+            android:name=".ACTIVITIES.SinglePostActivity"
             android:exported="false"
             android:theme="@style/Theme.ShareUp" />
         <activity
-            android:name=".ACTIVITIES.Login"
+            android:name=".ACTIVITIES.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -47,13 +47,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ACTIVITIES.Register"
+            android:name=".ACTIVITIES.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.EditProfile"
+            android:name=".ACTIVITIES.EditProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.Profile"
+            android:name=".ACTIVITIES.ProfileActivity"
             android:exported="false" />
         <activity
             android:name=".ACTIVITIES.BASE.BaseActivity"

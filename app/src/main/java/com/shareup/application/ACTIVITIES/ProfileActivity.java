@@ -2,7 +2,6 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,7 +27,7 @@ import com.shareup.viewmodel.ProfileViewModel;
 
 import java.util.ArrayList;
 
-public class Profile extends BaseActivity {
+public class ProfileActivity extends BaseActivity {
     ProfileViewModel profileViewModel;
     PostViewModel postViewModel;
     FollowViewModel followViewModel;
@@ -110,7 +109,7 @@ public class Profile extends BaseActivity {
         });
 
         btnEditProfile.setOnClickListener(view -> {
-            Intent intent = new Intent(Profile.this, EditProfile.class);
+            Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
             intent.putExtra("userId", userId);
             startActivity(intent);
         });
@@ -120,22 +119,22 @@ public class Profile extends BaseActivity {
         });
 
         clFollowers.setOnClickListener(view -> {
-            Intent intent = new Intent(Profile.this, ProfileList.class);
+            Intent intent = new Intent(ProfileActivity.this, ProfileListActivity.class);
             intent.putExtra("userId", userId);
-            intent.putExtra("listType", ProfileList.FOLLOWERS_LIST_TAG);
+            intent.putExtra("listType", ProfileListActivity.FOLLOWERS_LIST_TAG);
             startActivity(intent);
         });
 
         clFollowing.setOnClickListener(view -> {
-            Intent intent = new Intent(Profile.this, ProfileList.class);
+            Intent intent = new Intent(ProfileActivity.this, ProfileListActivity.class);
             intent.putExtra("userId", userId);
-            intent.putExtra("listType", ProfileList.FOLLOWINGS_LIST_TAG);
+            intent.putExtra("listType", ProfileListActivity.FOLLOWINGS_LIST_TAG);
             startActivity(intent);
         });
 
         postsAdapter.setOnItemClickListener((item, position) -> {
             // Open SinglePost activity
-            Intent intent = new Intent(Profile.this, SinglePost.class);
+            Intent intent = new Intent(ProfileActivity.this, SinglePostActivity.class);
             intent.putExtra("postId", item.getId());
             startActivity(intent);
         });
@@ -155,7 +154,7 @@ public class Profile extends BaseActivity {
 
         postsAdapter.setOnItemClickListener((item, position) -> {
             // Open SinglePost activity
-            Intent intent = new Intent(Profile.this, SinglePost.class);
+            Intent intent = new Intent(ProfileActivity.this, SinglePostActivity.class);
             intent.putExtra("postId", item.getId());
             startActivity(intent);
         });
