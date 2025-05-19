@@ -16,6 +16,9 @@
         android:theme="@style/Theme.ShareUp"
         tools:targetApi="31">
         <activity
+            android:name=".ACTIVITIES.ActivityList"
+            android:exported="false" />
+        <activity
             android:name=".ACTIVITIES.ProfileList"
             android:exported="false" />
         <activity
@@ -68,4 +71,5 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="default" />
     </application>
+
 </manifest>

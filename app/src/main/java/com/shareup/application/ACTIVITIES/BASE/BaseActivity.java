@@ -19,6 +19,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.il.yonatan.core.SessionManager;
+import com.shareup.application.ACTIVITIES.ActivityList;
 import com.shareup.application.ACTIVITIES.Feed;
 import com.shareup.application.ACTIVITIES.Login;
 
@@ -35,7 +36,6 @@ import androidx.core.view.WindowInsetsCompat;
 import com.shareup.application.ACTIVITIES.Profile;
 import com.shareup.application.ACTIVITIES.UploadPost;
 import com.shareup.application.R;
-import com.shareup.application.SERVICES.FirebaseNotificationService;
 import com.shareup.viewmodel.AuthViewModel;
 import com.shareup.viewmodel.FcmTokenViewModel;
 
@@ -108,7 +108,10 @@ public abstract class BaseActivity extends AppCompatActivity {
                     startActivity(intent);
 
                 } else if(itemId == R.id.navigation_activity){
-                    Toast.makeText(BaseActivity.this, "Not Implement", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(BaseActivity.this, ActivityList.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+
                 } else if(itemId == R.id.navigation_profile){
                     Intent intent = new Intent(BaseActivity.this, Profile.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -269,14 +272,20 @@ public abstract class BaseActivity extends AppCompatActivity {
                     PackageManager.PERMISSION_GRANTED) {
                 // FCM SDK (and your app) can post notifications.
                 Log.d("Permission", "Permission already granted: " + permission);
+
+                if (permissionCallback != null) {
+                    permissionCallback.run();
+                    permissionCallback = null; // Clear the callback after execution
+                }
             } else {
                 // Directly ask for the permission
                 Log.d("Permission", "Requesting permission: " + permission);
                 requestPermissionLauncher.launch(permission);
             }
         } else {
-            if (onPermissionGranted != null) {
-                onPermissionGranted.run();
+            if (permissionCallback != null) {
+                permissionCallback.run();
+                permissionCallback = null; // Clear the callback after execution
             }
         }
     }
