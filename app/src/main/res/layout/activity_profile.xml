@@ -155,7 +155,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="20dp"
-        android:weightSum="2"
+        android:weightSum="1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvBio"
@@ -167,19 +167,6 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:text="Follow"
-            app:layout_constraintStart_toStartOf="@+id/tvBio"
-            app:layout_constraintTop_toBottomOf="@+id/tvBio" />
-
-        <View
-            android:layout_width="5dp"
-            android:layout_height="match_parent" /> <!-- Gap -->
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnProfileMessage"
-            style="@style/SecondaryButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:text="Message"
             app:layout_constraintStart_toStartOf="@+id/tvBio"
             app:layout_constraintTop_toBottomOf="@+id/tvBio" />
     </LinearLayout>

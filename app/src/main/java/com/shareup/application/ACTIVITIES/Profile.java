@@ -36,7 +36,7 @@ public class Profile extends BaseActivity {
     PostAdapter postsAdapter;
 
     TextView tvPostsCount, tvFollowersCount, tvFollowingCount, tvProfileUsername, tvBio;
-    Button btnProfileFollow, btnProfileMessage, btnEditProfile, btnProfileLogout;
+    Button btnProfileFollow, btnEditProfile, btnProfileLogout;
     ImageView ivProfilePicture;
     LinearLayout profileButtons, profileButtonsOwn;
     ConstraintLayout clFollowers, clFollowing;
@@ -79,7 +79,6 @@ public class Profile extends BaseActivity {
 
         // Buttons
         btnProfileFollow = findViewById(R.id.btnProfileFollow);
-        btnProfileMessage = findViewById(R.id.btnProfileMessage);
         btnEditProfile = findViewById(R.id.btnEditProfile);
         btnProfileLogout = findViewById(R.id.btnProfileLogout);
 
@@ -108,10 +107,6 @@ public class Profile extends BaseActivity {
 
 
             toggleFollow();
-        });
-
-        btnProfileMessage.setOnClickListener(view -> {
-            // message user
         });
 
         btnEditProfile.setOnClickListener(view -> {
