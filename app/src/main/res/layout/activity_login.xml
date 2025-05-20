@@ -57,7 +57,7 @@
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnLoginToRegister"
         android:layout_width="match_parent"
-        android:text="Already have an account? Login"
+        android:text="Don't have an account? Create one"
         style="@style/PrimaryButton"
         android:textColor="@color/primary"
         android:background="@android:color/transparent"
