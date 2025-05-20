@@ -24,7 +24,7 @@ import com.shareup.viewmodel.PostViewModel;
 import java.io.File;
 import java.io.IOException;
 
-public class UploadPost extends BaseActivity {
+public class UploadPostActivity extends BaseActivity {
     PostViewModel postViewModel;
 
     ImageView ibUploadPostPicture;
@@ -58,7 +58,7 @@ public class UploadPost extends BaseActivity {
     @Override
     protected void initializeViews() {
         // ImageViews
-        ibUploadPostPicture = findViewById(R.id.ibUploadPostPicture);
+        ibUploadPostPicture = findViewById(R.id.ivUploadPostPicture);
 
         // EditTexts
         etUploadPostDescription = findViewById(R.id.etUploadPostDescription);
@@ -85,7 +85,7 @@ public class UploadPost extends BaseActivity {
     @Override
     protected void setListeners() {
         btnUploadPostUpload.setOnClickListener(v -> {
-             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, 1);
         });
 

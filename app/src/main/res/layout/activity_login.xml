@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:layout_marginHorizontal="20dp"
     android:background="@color/white"
-    tools:context=".ACTIVITIES.Login">
+    tools:context=".ACTIVITIES.LoginActivity">
 
 
     <TextView

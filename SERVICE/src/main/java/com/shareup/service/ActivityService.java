@@ -1,5 +1,6 @@
 package com.shareup.service;
 
+import android.app.Application;
 import android.content.Context;
 
 import com.shareup.model.Activity;
@@ -14,27 +15,13 @@ import java.util.function.Consumer;
 
 public class ActivityService extends BaseService {
 
-    public ActivityService(Context context) {
-        super(context);
-        this.SERVICE_ROUTE = "activity/";
+    public ActivityService(Application application) {
+        super(application);
+        this.SERVICE_ROUTE = "notifications/";
     }
 
     public void getUserActivity(String userId, Consumer<ApiResponse<ArrayList<Activity>>> callback) {
-        String route = userId + "/";
+        String route = userId + "/activity/";
         get(route, true, Activity.class, response -> callback.accept((ApiResponse<ArrayList<Activity>>) response));
-    }
-
-    public void setFcmToken(String token, Consumer<ApiResponse<Void>> callback) {
-        String route = "fcmToken/";
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("token", token);
-
-        post(route, data, Post.class, response -> callback.accept((ApiResponse<Void>) response));
-    }
-
-    public void clearFcmToken(Consumer<ApiResponse<Void>> callback) {
-        String route = "fcmToken/";
-        delete(route, Post.class, response -> callback.accept((ApiResponse<Void>) response));
     }
 }

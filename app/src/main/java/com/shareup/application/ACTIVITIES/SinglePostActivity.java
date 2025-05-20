@@ -1,9 +1,7 @@
 package com.shareup.application.ACTIVITIES;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -14,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -25,7 +22,7 @@ import com.shareup.application.R;
 import com.shareup.viewmodel.LikeViewModel;
 import com.shareup.viewmodel.PostViewModel;
 
-public class SinglePost extends BaseActivity {
+public class SinglePostActivity extends BaseActivity {
     PostViewModel postViewModel;
     LikeViewModel likeViewModel;
 
@@ -105,9 +102,19 @@ public class SinglePost extends BaseActivity {
             toggleLike();
         });
 
+        ibPostLike.setOnLongClickListener(v -> {
+            Intent intent = new Intent(SinglePostActivity.this, ProfileListActivity.class);
+            intent.putExtra("listType", ProfileListActivity.LIKES_LIST_TAG);
+            intent.putExtra("postId", postId);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+            return true;
+        });
+
         ibPostComment.setOnClickListener(v -> {
             // Open CommentActivity
-            Intent intent = new Intent(SinglePost.this, Comments.class);
+            Intent intent = new Intent(SinglePostActivity.this, CommentsActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("postId", postId);
             startActivity(intent);
@@ -119,14 +126,14 @@ public class SinglePost extends BaseActivity {
 
         btnViewComments.setOnClickListener(v -> {
             // Open CommentActivity
-            Intent intent = new Intent(SinglePost.this, Comments.class);
+            Intent intent = new Intent(SinglePostActivity.this, CommentsActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("postId", postId);
             startActivity(intent);
         });
 
         llProfileContainer.setOnClickListener(v -> {
-            Intent intent = new Intent(SinglePost.this, Profile.class);
+            Intent intent = new Intent(SinglePostActivity.this, ProfileActivity.class);
             intent.putExtra("userId", userId);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
@@ -212,7 +219,7 @@ public class SinglePost extends BaseActivity {
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_edit) {
                 // Handle edit post
-                Intent intent = new Intent(SinglePost.this, UploadPost.class);
+                Intent intent = new Intent(SinglePostActivity.this, UploadPostActivity.class);
                 intent.putExtra("postId", postId);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);

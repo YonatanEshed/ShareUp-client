@@ -27,7 +27,7 @@ import com.shareup.viewmodel.PostViewModel;
 
 import java.util.ArrayList;
 
-public class Feed extends BaseActivity {
+public class FeedActivity extends BaseActivity {
     public static final String HOME_FEED_TAG = "home_feed";
     public static final String SEARCH_FEED_TAG = "search_feed";
 
@@ -84,7 +84,7 @@ public class Feed extends BaseActivity {
     protected void setListeners() {
         setHeaderButtonOnClickListener(view -> {
             // Open Search Activity
-            Intent intent = new Intent(getApplicationContext(), Search.class);
+            Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         });
@@ -127,7 +127,7 @@ public class Feed extends BaseActivity {
                     // Set comment button listener
                     holder.getView("ibPostComment").setOnClickListener(view -> {
                         // Open Comments Activity
-                        Intent intent = new Intent(getApplicationContext(), Comments.class);
+                        Intent intent = new Intent(getApplicationContext(), CommentsActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.putExtra("postId", item.getId());
                         startActivity(intent);
@@ -140,7 +140,7 @@ public class Feed extends BaseActivity {
 
                     holder.getView("btnViewComments").setOnClickListener(view -> {
                         // Open Comments Activity
-                        Intent intent = new Intent(getApplicationContext(), Comments.class);
+                        Intent intent = new Intent(getApplicationContext(), CommentsActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.putExtra("postId", item.getId());
                         startActivity(intent);
@@ -180,11 +180,22 @@ public class Feed extends BaseActivity {
                         ibLikedPostLike = holder.getView("ibPostLike"); // Store the like button
                     });
 
+                    ibPostLike.setOnLongClickListener(view -> {
+                        // Show like count
+                        Intent intent = new Intent(FeedActivity.this, ProfileListActivity.class);
+                        intent.putExtra("listType", ProfileListActivity.LIKES_LIST_TAG);
+                        intent.putExtra("postId", item.getId());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+
+                        return true;
+                    });
+
                     // assign listener to profile container
                     LinearLayout llProfileContainer = holder.getView("llProfileContainer");
                     llProfileContainer.setOnClickListener(view -> {
                         // Open Profile Activity
-                        Intent intent = new Intent(getApplicationContext(), Profile.class);
+                        Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.putExtra("userId", item.getUser().getId());
                         startActivity(intent);
@@ -256,7 +267,7 @@ public class Feed extends BaseActivity {
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_edit) {
                 // Handle edit post
-                Intent intent = new Intent(this, UploadPost.class);
+                Intent intent = new Intent(this, UploadPostActivity.class);
                 intent.putExtra("postId", postId);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);

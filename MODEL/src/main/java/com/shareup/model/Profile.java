@@ -43,10 +43,6 @@ public class Profile extends BaseEntity {
         return profilePicture;
     }
 
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
-    }
-
     public int getFollowingCount() {
         return followingsCount;
     }

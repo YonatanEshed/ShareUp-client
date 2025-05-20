@@ -17,19 +17,19 @@ import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.R;
 import com.shareup.viewmodel.AuthViewModel;
 
-public class Login extends BaseActivity {
+public class RegisterActivity extends BaseActivity {
     AuthViewModel authViewModel;
 
-    Button btnLogin, btnLoginToRegister;
-    EditText etLoginEmail, etLoginPassword;
-    TextView tvLoginError;
-    
+    Button btnRegister, btnRegisterToLogin;
+    EditText etRegisterEmail, etRegisterUsername, etRegisterPassword;
+    TextView tvRegisterError;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-//        setContentView(R.layout.activity_login);
-        getLayoutInflater().inflate(R.layout.activity_login, findViewById(R.id.content_frame));
+//        setContentView(R.layout.activity_register);
+        getLayoutInflater().inflate(R.layout.activity_register, findViewById(R.id.content_frame));
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -43,39 +43,45 @@ public class Login extends BaseActivity {
 
     protected void initializeViews() {
         // Buttons
-        btnLogin = findViewById(R.id.btnLogin);
-        btnLoginToRegister = findViewById(R.id.btnLoginToRegister);
+        btnRegister = findViewById(R.id.btnRegister);
+        btnRegisterToLogin = findViewById(R.id.btnRegisterToLogin);
 
         // EditTexts
-        etLoginEmail = findViewById(R.id.etLoginEmail);
-        etLoginPassword = findViewById(R.id.etLoginPassword);
+        etRegisterEmail = findViewById(R.id.etRegisterEmail);
+        etRegisterUsername = findViewById(R.id.etRegisterUsername);
+        etRegisterPassword = findViewById(R.id.etRegisterPassword);
 
         // TextViews
-        tvLoginError = findViewById(R.id.tvLoginError);
+        tvRegisterError = findViewById(R.id.tvRegisterError);
 
         setViewModel();
         setListeners();
     }
 
     protected void setListeners() {
-        btnLogin.setOnClickListener(new View.OnClickListener() {
+        btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email = etLoginEmail.getText().toString();
-                String password = etLoginPassword.getText().toString();
+                String email = etRegisterEmail.getText().toString();
+                String username = etRegisterUsername.getText().toString();
+                String password = etRegisterPassword.getText().toString();
 
+                if (email.isEmpty()) {
+                    tvRegisterError.setText("Email is required");
+                    return;
+                } else if (password.isEmpty()) {
+                    tvRegisterError.setText("Password is required");
+                    return;
+                }
 
-                // add validations
-
-
-                authViewModel.login(email, password);
+                authViewModel.register(email, username, password);
             }
         });
 
-        btnLoginToRegister.setOnClickListener(new View.OnClickListener() {
+        btnRegisterToLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Login.this, Register.class);
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
@@ -89,7 +95,9 @@ public class Login extends BaseActivity {
             if (authData != null) {
                 Log.d("AuthData", authData.toString());
 
-                login(authData.getUserId());
+                authViewModel.saveLogin(authData.getToken(), authData.getUserId());
+
+                login(authData.getToken(), authData.getUserId());
             }
         });
 
@@ -103,18 +111,8 @@ public class Login extends BaseActivity {
 
         authViewModel.getMessage().observe(this, message -> {
             if (message != null) {
-                tvLoginError.setText(message);
+                tvRegisterError.setText(message);
             }
         });
-
-
-        // skip login if already logged in
-        if (authViewModel.isLoggedIn()) {
-            Intent intent = new Intent(Login.this, Profile.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            intent.putExtra("userId", getUserId());
-            startActivity(intent);
-        }
-
     }
 }

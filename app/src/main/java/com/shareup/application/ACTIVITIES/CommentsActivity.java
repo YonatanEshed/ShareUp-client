@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -22,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.shareup.application.ACTIVITIES.BASE.BaseActivity;
 import com.shareup.application.ADPTERS.CommentAdapter;
-import com.shareup.application.ADPTERS.PostAdapter;
 import com.shareup.application.R;
 import com.shareup.model.Comment;
 import com.shareup.viewmodel.CommentViewModel;
@@ -30,7 +28,7 @@ import com.shareup.viewmodel.CommentViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Comments extends BaseActivity {
+public class CommentsActivity extends BaseActivity {
     private CommentViewModel commentViewModel;
 
     private EditText etAddComment;
@@ -87,7 +85,7 @@ public class Comments extends BaseActivity {
         ibSendComment.setOnClickListener(view -> {
             String commentContent = etAddComment.getText().toString();
 
-            if (!commentContent.isEmpty()) {
+            if (!commentContent.isEmpty() || !commentContent.matches(".*[a-zA-Z0-9].*")) {
                 commentViewModel.addComment(postId, commentContent);
                 etAddComment.setText("");
             }
@@ -141,7 +139,7 @@ public class Comments extends BaseActivity {
                     LinearLayout llCommentUserContainer = holder.getView("llCommentUserContainer");
                     llCommentUserContainer.setOnClickListener(view -> {
                         // Open Profile Activity
-                        Intent intent = new Intent(getApplicationContext(), Profile.class);
+                        Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.putExtra("userId", item.getUser().getId());
                         startActivity(intent);

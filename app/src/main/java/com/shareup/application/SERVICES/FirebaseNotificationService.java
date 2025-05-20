@@ -1,5 +1,6 @@
 package com.shareup.application.SERVICES;
 
+import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -19,7 +20,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService  {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-
+        Log.d("FirebaseMessaging", "Message received from: " + remoteMessage.getFrom());
         // Handle the incoming message
         if (remoteMessage.getNotification() != null) {
             String title = remoteMessage.getNotification().getTitle();

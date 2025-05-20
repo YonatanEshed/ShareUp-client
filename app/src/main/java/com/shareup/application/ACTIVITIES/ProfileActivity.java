@@ -2,7 +2,6 @@ package com.shareup.application.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -11,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -27,7 +27,7 @@ import com.shareup.viewmodel.ProfileViewModel;
 
 import java.util.ArrayList;
 
-public class Profile extends BaseActivity {
+public class ProfileActivity extends BaseActivity {
     ProfileViewModel profileViewModel;
     PostViewModel postViewModel;
     FollowViewModel followViewModel;
@@ -35,9 +35,10 @@ public class Profile extends BaseActivity {
     PostAdapter postsAdapter;
 
     TextView tvPostsCount, tvFollowersCount, tvFollowingCount, tvProfileUsername, tvBio;
-    Button btnProfileFollow, btnProfileMessage, btnEditProfile, btnProfileLogout;
+    Button btnProfileFollow, btnEditProfile, btnProfileLogout;
     ImageView ivProfilePicture;
     LinearLayout profileButtons, profileButtonsOwn;
+    ConstraintLayout clFollowers, clFollowing;
     RecyclerView rvProfilePosts;
 
     String userId;
@@ -77,13 +78,16 @@ public class Profile extends BaseActivity {
 
         // Buttons
         btnProfileFollow = findViewById(R.id.btnProfileFollow);
-        btnProfileMessage = findViewById(R.id.btnProfileMessage);
         btnEditProfile = findViewById(R.id.btnEditProfile);
         btnProfileLogout = findViewById(R.id.btnProfileLogout);
 
         // LinearLayouts
         profileButtons = findViewById(R.id.profileButtons);
         profileButtonsOwn = findViewById(R.id.profileButtonsOwn);
+
+        // ConstraintLayouts
+        clFollowers = findViewById(R.id.clFollowers);
+        clFollowing = findViewById(R.id.clFollowing);
 
         // RecyclerView
         rvProfilePosts = findViewById(R.id.rvProfilePosts);
@@ -104,12 +108,8 @@ public class Profile extends BaseActivity {
             toggleFollow();
         });
 
-        btnProfileMessage.setOnClickListener(view -> {
-            // message user
-        });
-
         btnEditProfile.setOnClickListener(view -> {
-            Intent intent = new Intent(Profile.this, EditProfile.class);
+            Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
             intent.putExtra("userId", userId);
             startActivity(intent);
         });
@@ -118,9 +118,23 @@ public class Profile extends BaseActivity {
             logout();
         });
 
+        clFollowers.setOnClickListener(view -> {
+            Intent intent = new Intent(ProfileActivity.this, ProfileListActivity.class);
+            intent.putExtra("userId", userId);
+            intent.putExtra("listType", ProfileListActivity.FOLLOWERS_LIST_TAG);
+            startActivity(intent);
+        });
+
+        clFollowing.setOnClickListener(view -> {
+            Intent intent = new Intent(ProfileActivity.this, ProfileListActivity.class);
+            intent.putExtra("userId", userId);
+            intent.putExtra("listType", ProfileListActivity.FOLLOWINGS_LIST_TAG);
+            startActivity(intent);
+        });
+
         postsAdapter.setOnItemClickListener((item, position) -> {
             // Open SinglePost activity
-            Intent intent = new Intent(Profile.this, SinglePost.class);
+            Intent intent = new Intent(ProfileActivity.this, SinglePostActivity.class);
             intent.putExtra("postId", item.getId());
             startActivity(intent);
         });
@@ -140,7 +154,7 @@ public class Profile extends BaseActivity {
 
         postsAdapter.setOnItemClickListener((item, position) -> {
             // Open SinglePost activity
-            Intent intent = new Intent(Profile.this, SinglePost.class);
+            Intent intent = new Intent(ProfileActivity.this, SinglePostActivity.class);
             intent.putExtra("postId", item.getId());
             startActivity(intent);
         });

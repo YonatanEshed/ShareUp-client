@@ -1,8 +1,11 @@
 package com.shareup.application.ACTIVITIES.BASE;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,20 +19,24 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.il.yonatan.core.SessionManager;
-import com.shareup.application.ACTIVITIES.Feed;
-import com.shareup.application.ACTIVITIES.Login;
+import com.shareup.application.ACTIVITIES.ActivityListActivity;
+import com.shareup.application.ACTIVITIES.FeedActivity;
+import com.shareup.application.ACTIVITIES.LoginActivity;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.shareup.application.ACTIVITIES.Profile;
-import com.shareup.application.ACTIVITIES.UploadPost;
+import com.shareup.application.ACTIVITIES.ProfileActivity;
+import com.shareup.application.ACTIVITIES.UploadPostActivity;
 import com.shareup.application.R;
-import com.shareup.application.SERVICES.FirebaseNotificationService;
+import com.shareup.viewmodel.AuthViewModel;
 import com.shareup.viewmodel.FcmTokenViewModel;
 
 public abstract class BaseActivity extends AppCompatActivity {
@@ -50,7 +57,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         // handle invalid tokens
         SessionManager.getInstance().getForceLogout().observe(this, event -> {
             if (event != null && event.markHandled()) {
-                logout();
+                Log.d("force logout", "Force logout triggered");
+                logout(true);
             }
         });
     }
@@ -83,26 +91,29 @@ public abstract class BaseActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
 
                 if (itemId == R.id.navigation_home){
-                    Intent intent = new Intent(BaseActivity.this, Feed.class);
+                    Intent intent = new Intent(BaseActivity.this, FeedActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("feedType", Feed.HOME_FEED_TAG);
+                    intent.putExtra("feedType", FeedActivity.HOME_FEED_TAG);
                     startActivity(intent);
 
                 } else if(itemId == R.id.navigation_search){
-                    Intent intent = new Intent(BaseActivity.this, Feed.class);
+                    Intent intent = new Intent(BaseActivity.this, FeedActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("feedType", Feed.SEARCH_FEED_TAG);
+                    intent.putExtra("feedType", FeedActivity.SEARCH_FEED_TAG);
                     startActivity(intent);
 
                 } else if(itemId == R.id.navigation_upload){
-                    Intent intent = new Intent(BaseActivity.this, UploadPost.class);
+                    Intent intent = new Intent(BaseActivity.this, UploadPostActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
 
                 } else if(itemId == R.id.navigation_activity){
-                    Toast.makeText(BaseActivity.this, "Not Implement", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(BaseActivity.this, ActivityListActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+
                 } else if(itemId == R.id.navigation_profile){
-                    Intent intent = new Intent(BaseActivity.this, Profile.class);
+                    Intent intent = new Intent(BaseActivity.this, ProfileActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("userId", getUserId());
                     startActivity(intent);
@@ -161,12 +172,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected void logout() {
-        SharedPreferences sharedPreferences = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove("jwt_token");
-        editor.remove("user_id");
-        editor.apply();
+        logout(false);
+    }
 
+    protected void logout(boolean isForced) {
         // delete current FCM token
         FirebaseMessaging.getInstance().deleteToken()
                 .addOnCompleteListener(task -> {
@@ -179,14 +188,34 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // clear FCM token from server
         FcmTokenViewModel fcmTokenViewModel = new FcmTokenViewModel(getApplication());
-        fcmTokenViewModel.clearFcmToken();
 
-        Intent intent = new Intent(this, Login.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        // if the logout is forced, we don't need to clear the token from the server
+        if (!isForced)
+            fcmTokenViewModel.clearFcmToken();
+
+        fcmTokenViewModel.getDeleteData().observe(this, success -> {
+            if (success) {
+                // clear user data
+                SharedPreferences sharedPreferences = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.remove("jwt_token");
+                editor.remove("user_id");
+                editor.apply();
+
+                Intent intent = new Intent(this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            } else {
+                Log.e("FCM", "Failed to clear FCM token from server");
+            }
+        });
     }
 
-    protected void login(String userId) {
+    protected void login(String token, String userId) {
+
+        AuthViewModel authViewModel = new AuthViewModel(getApplication());
+
+        authViewModel.saveLogin(token, userId);
 
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(task -> {
@@ -195,16 +224,70 @@ public abstract class BaseActivity extends AppCompatActivity {
                         Log.d("FCM", "New FCM token on login: " + newToken);
 
                         // Send this token to your server
-                        FirebaseNotificationService firebaseNotificationService = new FirebaseNotificationService();
-                        firebaseNotificationService.sendTokenToServer(newToken);
+                        FcmTokenViewModel fcmTokenViewModel = new FcmTokenViewModel(getApplication());
+                        fcmTokenViewModel.setFcmToken(token);
                     } else {
                         Log.e("FCM", "Failed to get FCM token", task.getException());
                     }
                 });
 
-        Intent intent = new Intent(this, Profile.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.putExtra("userId", userId);
-        startActivity(intent);
+        requestPermission(Manifest.permission.POST_NOTIFICATIONS, () -> {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra("userId", userId);
+            startActivity(intent);
+        });
+
     }
+
+    // Region Permissions
+    private Runnable permissionCallback;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Toast.makeText(this, "Notifications permission granted",Toast.LENGTH_SHORT)
+                            .show();
+                } else {
+                    Toast.makeText(this, "FCM can't post notifications without granting permission",
+                            Toast.LENGTH_LONG).show();
+                }
+
+                if (permissionCallback != null) {
+                    permissionCallback.run();
+                    permissionCallback = null; // Clear the callback after execution
+                }
+            });
+
+    protected void requestPermission(String permission) {
+        requestPermission(permission, null);
+    }
+
+    protected void requestPermission(String permission, Runnable onPermissionGranted) {
+        this.permissionCallback = onPermissionGranted;
+
+        // This is only necessary for API Level > 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, permission) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // FCM SDK (and your app) can post notifications.
+                Log.d("Permission", "Permission already granted: " + permission);
+
+                if (permissionCallback != null) {
+                    permissionCallback.run();
+                    permissionCallback = null; // Clear the callback after execution
+                }
+            } else {
+                // Directly ask for the permission
+                Log.d("Permission", "Requesting permission: " + permission);
+                requestPermissionLauncher.launch(permission);
+            }
+        } else {
+            if (permissionCallback != null) {
+                permissionCallback.run();
+                permissionCallback = null; // Clear the callback after execution
+            }
+        }
+    }
+    //endregion
 }

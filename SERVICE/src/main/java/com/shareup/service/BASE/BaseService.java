@@ -98,13 +98,6 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    public void clearLogin() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove("jwt_token");
-        editor.remove("user_id");
-        editor.apply();
-    }
-
     protected <T> void makeApiRequest(ApiMethod method, String route, Map<String, Object> body, File file, boolean isListReponse, Class<T> dataClass, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
@@ -177,7 +170,6 @@ public abstract class BaseService {
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, TypeToken.getParameterized(ArrayList.class, dataClass).getType()).getType();
                         ApiResponse<ArrayList<T>> apiResponse = gson.fromJson(json, responseType);
 
-                        apiResponse.setStatusCode(response.code());
                         apiResponse.setSuccess(true);
 
                         Log.i("BaseService", apiResponse.toString());
@@ -188,7 +180,6 @@ public abstract class BaseService {
                         Log.d("BaseService", "Response Type: " + responseType);
                         ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
 
-                        apiResponse.setStatusCode(response.code());
                         apiResponse.setSuccess(true);
 
                         Log.i("BaseService", apiResponse.toString());
@@ -210,7 +201,6 @@ public abstract class BaseService {
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
                         ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
 
-                        apiResponse.setStatusCode(response.code());
                         apiResponse.setSuccess(false);
 
                         Log.i("BaseService", apiResponse.toString());
