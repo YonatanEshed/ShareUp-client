@@ -170,7 +170,6 @@ public abstract class BaseService {
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, TypeToken.getParameterized(ArrayList.class, dataClass).getType()).getType();
                         ApiResponse<ArrayList<T>> apiResponse = gson.fromJson(json, responseType);
 
-                        apiResponse.setStatusCode(response.code());
                         apiResponse.setSuccess(true);
 
                         Log.i("BaseService", apiResponse.toString());
@@ -181,7 +180,6 @@ public abstract class BaseService {
                         Log.d("BaseService", "Response Type: " + responseType);
                         ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
 
-                        apiResponse.setStatusCode(response.code());
                         apiResponse.setSuccess(true);
 
                         Log.i("BaseService", apiResponse.toString());
@@ -203,7 +201,6 @@ public abstract class BaseService {
                         Type responseType = TypeToken.getParameterized(ApiResponse.class, dataClass).getType();
                         ApiResponse<T> apiResponse = gson.fromJson(json, responseType);
 
-                        apiResponse.setStatusCode(response.code());
                         apiResponse.setSuccess(false);
 
                         Log.i("BaseService", apiResponse.toString());
