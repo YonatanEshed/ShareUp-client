@@ -98,13 +98,6 @@ public abstract class BaseService {
         editor.apply();
     }
 
-    public void clearLogin() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove("jwt_token");
-        editor.remove("user_id");
-        editor.apply();
-    }
-
     protected <T> void makeApiRequest(ApiMethod method, String route, Map<String, Object> body, File file, boolean isListReponse, Class<T> dataClass, Consumer<Object> callback) {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<Object> call;
