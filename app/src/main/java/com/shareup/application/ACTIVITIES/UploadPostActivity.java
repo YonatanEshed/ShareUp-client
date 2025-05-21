@@ -1,9 +1,7 @@
 package com.shareup.application.ACTIVITIES;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +9,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -35,6 +37,10 @@ public class UploadPostActivity extends BaseActivity {
     String postId;
 
     Uri postPicture;
+    Uri cameraImageUri;
+
+    ActivityResultLauncher<String> galleryLauncher;
+    ActivityResultLauncher<Uri> cameraLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,13 +86,46 @@ public class UploadPostActivity extends BaseActivity {
             btnUploadPostPublish.setText("Publish");
             btnUploadPostUpload.setVisibility(View.VISIBLE);
         }
+
+        // Initialize ActivityResultLaunchers
+        galleryLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                ibUploadPostPicture.setImageURI(uri);
+                postPicture = uri;
+            }
+        });
+
+        cameraLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+            if (success && cameraImageUri != null) {
+                ibUploadPostPicture.setImageURI(cameraImageUri);
+                postPicture = cameraImageUri;
+            }
+        });
     }
 
     @Override
     protected void setListeners() {
         btnUploadPostUpload.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(intent, 1);
+            PopupMenu popupMenu = new PopupMenu(this, v);
+            popupMenu.getMenu().add("Gallery");
+            popupMenu.getMenu().add("Camera");
+
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getTitle().equals("Gallery")) {
+                    requestPermission("android.permission.READ_EXTERNAL_STORAGE", () -> {
+                        galleryLauncher.launch("image/*");
+                    });
+                } else if (item.getTitle().equals("Camera")) {
+                    requestPermission("android.permission.CAMERA", () -> {
+                        File imageFile = new File(getExternalFilesDir(null), "temp_image.jpg");
+                        cameraImageUri = FileProvider.getUriForFile(this, getPackageName() + ".provider", imageFile);
+                        cameraLauncher.launch(cameraImageUri);
+                    });
+                }
+                return true;
+            });
+
+            popupMenu.show();
         });
 
         btnUploadPostPublish.setOnClickListener(v -> {
@@ -145,19 +184,6 @@ public class UploadPostActivity extends BaseActivity {
 
         if (postId != null) {
             postViewModel.getPost(postId);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
-            // Handle the image selection
-            Uri selectedImageUri = data.getData();
-            if (selectedImageUri != null) {
-                ibUploadPostPicture.setImageURI(selectedImageUri);
-                postPicture = selectedImageUri;
-            }
         }
     }
 }

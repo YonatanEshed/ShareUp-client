@@ -9,6 +9,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -31,6 +35,10 @@ public class EditProfileActivity extends BaseActivity {
     TextView tvEditProfileError;
 
     Uri newProfilePictureUri;
+    Uri cameraImageUri;
+
+    ActivityResultLauncher<String> galleryLauncher;
+    ActivityResultLauncher<Uri> cameraLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +74,21 @@ public class EditProfileActivity extends BaseActivity {
         // TextViews
         tvEditProfileError = findViewById(R.id.tvEditProfileError);
 
+
+        // Initialize ActivityResultLaunchers
+        galleryLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                ibEditProfilePicture.setImageURI(uri);
+                newProfilePictureUri = uri;
+            }
+        });
+
+        cameraLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+            if (success && cameraImageUri != null) {
+                ibEditProfilePicture.setImageURI(cameraImageUri);
+                newProfilePictureUri = cameraImageUri;
+            }
+        });
     }
 
     @Override
@@ -92,9 +115,26 @@ public class EditProfileActivity extends BaseActivity {
         });
 
         ibEditProfilePicture.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            startActivityForResult(intent, 1);
+            PopupMenu popupMenu = new PopupMenu(this, v);
+            popupMenu.getMenu().add("Gallery");
+            popupMenu.getMenu().add("Camera");
+
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getTitle().equals("Gallery")) {
+                    requestPermission("android.permission.READ_EXTERNAL_STORAGE", () -> {
+                        galleryLauncher.launch("image/*");
+                    });
+                } else if (item.getTitle().equals("Camera")) {
+                    requestPermission("android.permission.CAMERA", () -> {
+                        File imageFile = new File(getExternalFilesDir(null), "temp_image.jpg");
+                        cameraImageUri = FileProvider.getUriForFile(this, getPackageName() + ".provider", imageFile);
+                        cameraLauncher.launch(cameraImageUri);
+                    });
+                }
+                return true;
+            });
+
+            popupMenu.show();
         });
     }
 
@@ -133,18 +173,5 @@ public class EditProfileActivity extends BaseActivity {
         });
 
         profileViewModel.getProfile(getUserId());
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
-            // Handle the image selection
-            Uri selectedImageUri = data.getData();
-            if (selectedImageUri != null) {
-                ibEditProfilePicture.setImageURI(selectedImageUri);
-                newProfilePictureUri = selectedImageUri;
-            }
-        }
     }
 }

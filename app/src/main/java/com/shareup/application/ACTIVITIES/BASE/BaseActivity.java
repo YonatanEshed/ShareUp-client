@@ -241,30 +241,44 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     // Region Permissions
-    private Runnable permissionCallback;
+    private Runnable permissionSuccessCallback;
+    private Runnable permissionDeniedCallback;
 
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    Toast.makeText(this, "Notifications permission granted",Toast.LENGTH_SHORT)
+                    Toast.makeText(this, "permission granted",Toast.LENGTH_SHORT)
                             .show();
+
+                    if (permissionSuccessCallback != null) {
+                        permissionSuccessCallback.run();
+                    }
                 } else {
-                    Toast.makeText(this, "FCM can't post notifications without granting permission",
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                    if (permissionDeniedCallback != null) {
+                        permissionDeniedCallback.run();
+                    }
                 }
 
-                if (permissionCallback != null) {
-                    permissionCallback.run();
-                    permissionCallback = null; // Clear the callback after execution
-                }
+                permissionSuccessCallback = null;
+                permissionDeniedCallback = null;
             });
 
     protected void requestPermission(String permission) {
-        requestPermission(permission, null);
+        requestPermission(permission, null, null);
     }
 
     protected void requestPermission(String permission, Runnable onPermissionGranted) {
-        this.permissionCallback = onPermissionGranted;
+        requestPermission(permission, onPermissionGranted, null);
+    }
+
+    protected void requestPermission(String permission, Runnable onPermissionGranted, Runnable onPermissionDenied) {
+        this.permissionSuccessCallback = onPermissionGranted;
+        this.permissionDeniedCallback = onPermissionDenied;
+
+        if (onPermissionDenied != null) {
+            this.permissionDeniedCallback = onPermissionGranted;
+        }
 
         // This is only necessary for API Level > 33 (TIRAMISU)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -273,9 +287,10 @@ public abstract class BaseActivity extends AppCompatActivity {
                 // FCM SDK (and your app) can post notifications.
                 Log.d("Permission", "Permission already granted: " + permission);
 
-                if (permissionCallback != null) {
-                    permissionCallback.run();
-                    permissionCallback = null; // Clear the callback after execution
+                if (permissionSuccessCallback != null) {
+                    permissionSuccessCallback.run();
+                    permissionSuccessCallback = null; // Clear the callback after execution
+                    permissionDeniedCallback = null; // Clear the callback after execution
                 }
             } else {
                 // Directly ask for the permission
@@ -283,9 +298,10 @@ public abstract class BaseActivity extends AppCompatActivity {
                 requestPermissionLauncher.launch(permission);
             }
         } else {
-            if (permissionCallback != null) {
-                permissionCallback.run();
-                permissionCallback = null; // Clear the callback after execution
+            if (permissionSuccessCallback != null) {
+                permissionSuccessCallback.run();
+                permissionSuccessCallback = null; // Clear the callback after execution
+                permissionDeniedCallback = null; // Clear the callback after execution
             }
         }
     }
