@@ -3,7 +3,6 @@ package com.shareup.service;
 import android.content.Context;
 
 import com.shareup.model.ApiResponse;
-import com.shareup.model.AuthResponse;
 import com.shareup.model.Profile;
 import com.shareup.service.BASE.BaseService;
 

@@ -3,7 +3,6 @@ package com.shareup.viewmodel;
 import android.app.Application;
 
 import com.shareup.model.ApiMethod;
-import com.shareup.model.ApiResponse;
 import com.shareup.model.AuthResponse;
 import com.shareup.service.AuthService;
 import com.shareup.viewmodel.BASE.BaseViewModel;
