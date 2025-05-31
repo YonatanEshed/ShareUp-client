@@ -112,7 +112,7 @@ public class UploadPostActivity extends BaseActivity {
 
             popupMenu.setOnMenuItemClickListener(item -> {
                 if (item.getTitle().equals("Gallery")) {
-                    requestPermission("android.permission.READ_EXTERNAL_STORAGE", () -> {
+                    requestPermission("android.permission.READ_MEDIA_IMAGES", () -> {
                         galleryLauncher.launch("image/*");
                     });
                 } else if (item.getTitle().equals("Camera")) {
