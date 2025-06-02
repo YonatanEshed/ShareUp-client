@@ -1,8 +1,6 @@
 package com.shareup.model;
 
 import com.shareup.model.BASE.BaseEntity;
-import com.google.gson.annotations.SerializedName;
-
 
 import java.util.HashMap;
 import java.util.Map;
